@@ -22,18 +22,43 @@ namespace f5 {
         /// Thread safe associative array (map) implemented on a std::vector
         template<typename K, typename V>
         class tsmap {
-            std::mutex mutex;
+            /// Mutex used to control access to the vector
+            mutable std::mutex mutex;
+            /// Vector which stores the data
             std::vector<std::pair<K, V>> map;
+
+            /// Return the lower bound for the key
+            auto lower_bound(const K &k) const {
+                return std::lower_bound(map.begin(), map.end(), k,
+                    [](const auto &l, auto r) {
+                        return l.first < r;
+                    });
+            }
+            auto lower_bound(const K &k) {
+                return std::lower_bound(map.begin(), map.end(), k,
+                    [](const auto &l, auto r) {
+                        return l.first < r;
+                    });
+            }
         public:
+            /// Return a pointer to the value if found. If not found then
+            /// return nullptr
+            V const *find(const K &k) const {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto found = lower_bound(k);
+                if ( found == map.end() ) {
+                    return nullptr;
+                } else {
+                    return &found->second;
+                }
+            }
+
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the item
             template<typename... Args>
             V &emplace_if_not_found(const K &k, Args&&... args) {
                 std::unique_lock<std::mutex> lock(mutex);
-                auto bound = std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, auto r) {
-                        return l.first < r;
-                    });
+                auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
                     return bound->second;
                 }
@@ -46,10 +71,7 @@ namespace f5 {
             template<typename F>
             V &add_if_not_found(const K &k, F lambda) {
                 std::unique_lock<std::mutex> lock(mutex);
-                auto bound = std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, auto r) {
-                        return l.first < r;
-                    });
+                auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
                     return bound->second;
                 }
