@@ -29,6 +29,11 @@ namespace f5 {
             tsring(std::size_t s)
             : ring(s) {
             }
+
+            template<typename F>
+            bool emplace_back(F lambda) {
+                return false;
+            }
         };
 
 
