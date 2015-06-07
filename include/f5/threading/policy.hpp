@@ -17,7 +17,7 @@ namespace f5 {
 
         /// Policy which returns the values held in the container
         template<typename V>
-        struct container_default_policy {
+        struct container_by_value_policy {
             using found_type = V;
             using value_return_type = V;
 
@@ -29,6 +29,7 @@ namespace f5 {
             }
         };
 
+        /// Policy dereferences the pointer when appropriate
         template<typename V>
         struct pointer_dereference_policy {
             using found_type = decltype(&*V());
@@ -40,6 +41,17 @@ namespace f5 {
             static value_return_type value_from_V(V &v) {
                 return *v;
             }
+        };
+
+        /// Use the values by default in the container interface
+        template<typename V>
+        struct container_default_policy {
+            using type = container_by_value_policy<V>;
+        };
+        /// Dereference std::unique_ptr by default
+        template<typename V>
+        struct container_default_policy<std::unique_ptr<V>> {
+            using type = pointer_dereference_policy<std::unique_ptr<V>>;
         };
 
 

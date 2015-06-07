@@ -23,7 +23,7 @@ namespace f5 {
 
         /// Thread safe associative array (map) implemented on a std::vector
         template<typename K, typename V,
-            typename P = container_default_policy<V>>
+            typename P = typename container_default_policy<V>::type>
         class tsmap {
             /// Mutex used to control access to the vector
             mutable std::mutex mutex;

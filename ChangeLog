@@ -1,2 +1,5 @@
+2015-06-07  Kirit Saelensminde  <kirit@felspar.com>
+ Add a map like container based on `std::vector` whose interface is controlled by a policy type.
+
 2015-06-05  Kirit Saelensminde  <kirit@felspar.com>
  Added ChangeLog
