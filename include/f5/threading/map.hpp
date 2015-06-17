@@ -59,6 +59,22 @@ namespace f5 {
                 }
             }
 
+            /// Ensures the item at the requested key is the value given
+            template<typename A>
+            typename traits::value_return_type insert_or_assign(
+                const K &k, const A &a
+            ) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto bound = lower_bound(k);
+                if ( bound != map.end() && bound->first == k ) {
+                    return bound->second = a;
+                } else {
+                    map.emplace(bound, std::piecewise_construct,
+                        std::forward_as_tuple(k),
+                        std::forward_as_tuple(a));
+                    return map.back().second;
+                }
+            }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the item
             template<typename... Args>
