@@ -67,12 +67,14 @@ namespace f5 {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
-                    return bound->second = a;
+                    // We have a cache hit, so assign
+                    return traits::value_from_V(bound->second = a);
                 } else {
+                    // We have a cache miss so insert
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(a));
-                    return map.back().second;
+                    return traits::value_from_V(map.back().second);
                 }
             }
             /// Adds a value at the key if there isn't one there already.
