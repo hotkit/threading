@@ -1,3 +1,7 @@
+2015-06-18  Kirit Saelensminde  <kirit@felspar.com>
+ * Add `insert_or_assign_if` which allows atomic overwrite of values under user control.
+ * `insert_or_assign` needs to wrap the values it returns in the right way.
+
 2015-06-17  Kirit Saelensminde  <kirit@felspar.com>
  Added `f5::threading::tsmap::insert_or_assign`.
 
