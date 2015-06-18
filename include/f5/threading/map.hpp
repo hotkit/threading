@@ -77,6 +77,29 @@ namespace f5 {
                     return traits::value_from_V(map.back().second);
                 }
             }
+            /// Adds the item if the key is not found. If the key is found and
+            /// the predicate returns true then replaces the value with the
+            /// one returned by the lambda
+            template<typename C, typename F>
+            typename traits::value_return_type insert_or_assign_if(
+                const K &k, C predicate, F lambda
+            ) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto bound = lower_bound(k);
+                if ( bound != map.end() && bound->first == k ) {
+                    // Cache hit so check the predicate
+                    if ( predicate(bound->second) ) {
+                        return traits::value_from_V(bound->second = lambda());
+                    } else {
+                        return traits::value_from_V(bound->second);
+                    }
+                }
+                // Cache miss, so use the lambda to get the value to insert
+                return traits::value_from_V(
+                    map.emplace(bound, std::piecewise_construct,
+                        std::forward_as_tuple(k),
+                        std::forward_as_tuple(lambda()))->second);
+            }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the item
             template<typename... Args>
@@ -86,8 +109,10 @@ namespace f5 {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
+                    // A cache hit, so return what we have
                     return traits::value_from_V(bound->second);
                 }
+                // Insert before returning the new value
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
@@ -102,8 +127,10 @@ namespace f5 {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
+                    // Cache hit so don't run the lambda
                     return traits::value_from_V(bound->second);
                 }
+                // Cache miss, so use the lambda to get the value to insert
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
