@@ -47,6 +47,12 @@ namespace f5 {
                     });
             }
         public:
+            /// Return an estimate of the size of the map.
+            std::size_t size() {
+                std::unique_lock<std::mutex> lock(mutex);
+                return map.size();
+            }
+
             /// Return a pointer to the value if found. If not found then
             /// return nullptr
             typename traits::found_type find(const K &k) const {
@@ -135,6 +141,18 @@ namespace f5 {
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(lambda()))->second);
+            }
+
+            /// Removes values where the predicate is true. Returns how
+            /// many are left.
+            template<typename Pr>
+            std::size_t remove_if(Pr predicate) {
+                std::unique_lock<std::mutex> lock(mutex);
+                map.erase(std::remove_if(map.begin(), map.end(),
+                    [predicate](const auto &v) {
+                        return predicate(v.first, v.second);
+                    }), map.end());
+                return map.size();
             }
         };
 
