@@ -1,3 +1,7 @@
+2015-06-20  Kirit Saelensminde  <kirit@felspar.com>
+ * Allow fetching of a size estimate from the `tsmap`.
+ * Add  a `tsmap::remove_if` member that allows items to be removed.
+
 2015-06-18  Kirit Saelensminde  <kirit@felspar.com>
  * Add a policy for promoting weak pointers to shared pointers.
  * Add `insert_or_assign_if` which allows atomic overwrite of values under user control.
