@@ -1,5 +1,6 @@
 2015-06-21  Kirit Saelensminde  <kirit@felspar.com>
- Add an initial `f5::tsset` implementation.
+ * Allow the `f5::tsmap` to be iterated over.
+ * Add an initial `f5::tsset` implementation.
 
 2015-06-20  Kirit Saelensminde  <kirit@felspar.com>
  * Allow fetching of a size estimate from the `tsmap`.
