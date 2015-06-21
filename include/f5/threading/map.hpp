@@ -143,6 +143,17 @@ namespace f5 {
                         std::forward_as_tuple(lambda()))->second);
             }
 
+            /// Iterate over the content of the map
+            template<typename F>
+            F for_each(F fn) const {
+                std::unique_lock<std::mutex> lock(mutex);
+                std::for_each(map.begin(), map.end(),
+                    [fn](const auto &v) {
+                        fn(v.first, v.second);
+                    });
+                return std::move(fn);
+            }
+
             /// Removes values where the predicate is true. Returns how
             /// many are left.
             template<typename Pr>
