@@ -1,5 +1,6 @@
 2015-06-25  Kirit Saelensminde  <kirit@felspar.com>
- Fix the interface to `tsmap::find` so that it is safe. We can't returna pointer to the value, we need to return a copy otherwise there is a race if values are also being inserted.
+ * Add a `f5::threading::boost_asio::reactor_pool` thread pool suitable for use with the `boost::asio::io_service`.
+ * Fix the interface to `tsmap::find` so that it is safe. We can't returna pointer to the value, we need to return a copy otherwise there is a race if values are also being inserted.
 
 2015-06-21  Kirit Saelensminde  <kirit@felspar.com>
  * Allow the `f5::tsmap` to be iterated over.
