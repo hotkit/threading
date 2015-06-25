@@ -55,11 +55,11 @@ namespace f5 {
 
             /// Return a pointer to the value if found. If not found then
             /// return nullptr
-            typename traits::found_type find(const K &k) const {
+            typename traits::found_type find(const K &k, const V &s = V()) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto found = lower_bound(k);
                 if ( found == map.end() ) {
-                    return typename traits::found_type();
+                    return traits::found_from_V(s);
                 } else {
                     return traits::found_from_V(found->second);
                 }
