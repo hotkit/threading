@@ -72,6 +72,19 @@ namespace f5 {
                 return std::move(std::for_each(set.begin(), set.end(), fn));
             }
 
+            /// Remove the last item from the set and return it. If the set
+            /// is empty then return the argument passed.
+            typename traits::found_type pop_back(const V &s = V()) {
+                std::unique_lock<std::mutex> lock(mutex);
+                if ( set.empty() ) {
+                    return traits::found_from_V(s);
+                } else {
+                    typename traits::found_type b{traits::found_from_V(set.back())};
+                    set.pop_back();
+                    return b;
+                }
+            }
+
             /// Remove the items that match the predicate
             template<typename F>
             std::size_t remove_if(F fn) {
