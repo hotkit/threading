@@ -58,7 +58,7 @@ namespace f5 {
             bool insert_if_not_found(const V &v) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(v);
-                if ( bound == set.end() || *bound != v ) {
+                if ( bound == set.end() || not(*bound == v) ) {
                     set.insert(bound, v);
                     return true;
                 }
