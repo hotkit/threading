@@ -1,3 +1,6 @@
+2015-07-19  Kirit Saelensminde  <kirit@felspar.com>
+ Added initial version of `tsring`, which implements a ring (or circular) buffer.
+
 2015-06-29  Kirit Saelensminde  <kirit@felspar.com>
  `tsset` gets a `pop_back` member which will pull off and return the highest item in the set.
 
