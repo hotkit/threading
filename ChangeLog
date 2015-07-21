@@ -1,3 +1,6 @@
+2015-07-21  Kirit Saelensminde  <kirit@felspar.com>
+ Rename `tsring::emplace_back` to `push_back`. Add a version that takes a lambda conditional.
+
 2015-07-19  Kirit Saelensminde  <kirit@felspar.com>
  Added initial version of `tsring`, which implements a ring (or circular) buffer.
 

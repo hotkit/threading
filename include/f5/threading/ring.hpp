@@ -32,15 +32,26 @@ namespace f5 {
             }
 
             /// Emplace an item on to the end of the buffer. If the buffer is full
-            /// and the predicate returns true then overwrite the start element,
-            /// otherwise don't add an item to the buffer. The default predicate
-            /// will overwrite the first item.
+            /// then the first item is overwritten.
             ///
             /// Returns the number of free slots in the buffer
             template<typename F>
-            std::size_t emplace_back(F fn) {
+            std::size_t push_back(F fn) {
                 std::unique_lock<std::mutex> lock(mutex);
                 ring.push_back(fn());
+                return ring.capacity() - ring.size();
+            }
+            /// Emplace an item on to the back of the buffer. If the buffer is full
+            /// the predicate is run. It can return `true` to indicate that the new
+            /// should be placed anyway.
+            ///
+            /// Returns the number of free slots in the buffer
+            template<typename F, typename P>
+            std::size_t push_back(F fn, P pred) {
+                std::unique_lock<std::mutex> lock(mutex);
+                if ( !ring.full() || pred(ring.back()) ) {
+                    ring.push_back(fn());
+                }
                 return ring.capacity() - ring.size();
             }
 
