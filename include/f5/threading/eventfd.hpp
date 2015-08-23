@@ -30,6 +30,8 @@ namespace f5 {
             class limiter {
                 /// The IO service
                 boost::asio::io_service &service;
+                /// The yield context that we can use
+                boost::asio::yield_context &yield;
                 /// The file descriptor
                 boost::asio::posix::stream_descriptor fd;
                 /// The limit before we block waiting for some of the work
@@ -37,6 +39,19 @@ namespace f5 {
                 const uint64_t m_limit;
                 /// The amount of outstanding work
                 uint64_t m_outstanding;
+
+                /// Wait until at least one job has completed. Returns
+                /// the number of jobs that have completed.
+                uint64_t wait(boost::asio::yield_context &yield) {
+                    uint64_t count = 0;
+                    boost::asio::streambuf buffer;
+                    boost::asio::async_read(fd, buffer,
+                        boost::asio::transfer_exactly(sizeof(count)), yield);
+                    buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
+                    assert(count <= m_outstanding);
+                    m_outstanding -= count;
+                    return count;
+                }
 
                 /// Get the file descriptor, or throw an exception
                 static auto get_eventfd() {
@@ -50,12 +65,19 @@ namespace f5 {
                 }
             public:
                 /// Construct with a given limit
-                limiter(boost::asio::io_service &ios, uint64_t limit)
-                : service(ios),
+                limiter(
+                    boost::asio::io_service &ios, boost::asio::yield_context &y, uint64_t limit
+                ) : service(ios), yield(y),
                     fd(ios, get_eventfd()),
                     m_limit(limit),
                     m_outstanding{}
                 {}
+                /// The destructor ensures that there is no outstanding work
+                /// before it completes
+                ~limiter() {
+                    while ( m_outstanding )
+                        wait(yield);
+                }
 
                 /// Return the IO service
                 boost::asio::io_service &get_io_service() {
@@ -116,21 +138,10 @@ namespace f5 {
 
                 /// Add another outstanding job and return it
                 std::shared_ptr<job> operator ++ () {
+                    while ( m_outstanding > m_limit )
+                        wait(yield);
                     ++m_outstanding;
                     return std::make_shared<job>(job(*this));
-                }
-
-                /// Wait until at least one job has completed. Returns
-                /// the number of jobs that have completed.
-                uint64_t wait(boost::asio::yield_context &yield) {
-                    uint64_t count = 0;
-                    boost::asio::streambuf buffer;
-                    boost::asio::async_read(fd, buffer,
-                        boost::asio::transfer_exactly(sizeof(count)), yield);
-                    buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
-                    assert(count <= m_outstanding);
-                    m_outstanding -= count;
-                    return count;
                 }
             };
 
