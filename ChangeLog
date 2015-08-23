@@ -1,3 +1,6 @@
+2015-08-23  Kirit Saelensminde  <kirit@felspar.com>
+ New `f5::eventfd::limiter` which allows task completions to be notified through a file descriptor suitable for use with Boost ASIO reactors.
+
 2015-07-21  Kirit Saelensminde  <kirit@felspar.com>
  Rename `tsring::emplace_back` to `push_back`. Add a version that takes a lambda conditional.
 
