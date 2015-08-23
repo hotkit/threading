@@ -83,10 +83,20 @@ namespace f5 {
                     : completed(false), limit(l) {
                     }
                 public:
+                    /// Make non-copyable
+                    job(const job &) = delete;
+                    job &operator = (const job &) = delete;
+
+                    /// Move constructor
+                    job(job &&j)
+                    : completed(j.completed), limit(j.limit) {
+                        j.completed = true; // Never call done on the one moved from
+                    }
                     /// Signal the job as completed, if not already done so
                     ~job() {
                         done([](auto, auto){});
                     }
+
                     /// Signal that the job is completed, if not already done so
                     template<typename E>
                     void done(E efn) {
@@ -105,9 +115,9 @@ namespace f5 {
                 friend class job;
 
                 /// Add another outstanding job and return it
-                job operator ++ () {
+                std::shared_ptr<job> operator ++ () {
                     ++m_outstanding;
-                    return job(*this);
+                    return std::make_shared<job>(job(*this));
                 }
 
                 /// Wait until at least one job has completed. Returns
