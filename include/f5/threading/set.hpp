@@ -85,6 +85,19 @@ namespace f5 {
                 }
             }
 
+            /// Remove the value from the set. Returns true if the
+            /// value was removed, false otherwise
+            bool remove(const V &s) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto item = lower_bound(s);
+                if ( item == set.end() )
+                    return false;
+                else {
+                    set.erase(item);
+                    return true;
+                }
+            }
+
             /// Remove the items that match the predicate
             template<typename F>
             std::size_t remove_if(F fn) {

@@ -1,3 +1,6 @@
+2015-08-30  Kirit Saelensminde  <kirit@felspar.com>
+ `tsset` now has a `remove` method that takes a value that it will remove if the value is in the set.
+
 2015-08-23  Kirit Saelensminde  <kirit@felspar.com>
  New `f5::eventfd::limiter` which allows task completions to be notified through a file descriptor suitable for use with Boost ASIO reactors.
 
