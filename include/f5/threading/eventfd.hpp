@@ -95,6 +95,10 @@ namespace f5 {
 
                 /// A proxy for an outstanding job
                 class job {
+                    /// TODO: This implementation uses the shared_ptr
+                    /// for reference counting. This is really a bit of a
+                    /// waste as the job (probably) doesn't need to be
+                    /// thread safe.
                     friend class limiter;
                     /// Set to true when the job has been signalled
                     bool completed;
