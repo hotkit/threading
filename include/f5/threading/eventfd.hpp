@@ -126,8 +126,8 @@ namespace f5 {
                             uint64_t count = 1;
                             boost::asio::async_write(limit.fd,
                                 boost::asio::buffer(&count, sizeof(count)),
-                                [efn, &count](auto error, auto bytes) {
-                                    if ( error || bytes != sizeof(count) )
+                                [efn](auto error, auto bytes) {
+                                    if ( error || bytes != sizeof(uint64_t) )
                                         efn(error, bytes);
                                 });
                         }
