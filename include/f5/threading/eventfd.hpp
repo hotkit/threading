@@ -137,7 +137,7 @@ namespace f5 {
 
                 /// Add another outstanding job and return it
                 std::shared_ptr<job> operator ++ () {
-                    while ( m_outstanding > m_limit )
+                    while ( m_limit && m_outstanding >= m_limit )
                         wait(yield);
                     ++m_outstanding;
                     return std::shared_ptr<job>(new job(*this));
