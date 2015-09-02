@@ -113,11 +113,6 @@ namespace f5 {
                     job(const job &) = delete;
                     job &operator = (const job &) = delete;
 
-                    /// Move constructor
-                    job(job &&j)
-                    : completed(j.completed), limit(j.limit) {
-                        j.completed = true; // Never call done on the one moved from
-                    }
                     /// Signal the job as completed, if not already done so
                     ~job() {
                         done([](auto, auto){});
@@ -145,7 +140,7 @@ namespace f5 {
                     while ( m_outstanding > m_limit )
                         wait(yield);
                     ++m_outstanding;
-                    return std::make_shared<job>(job(*this));
+                    return std::shared_ptr<job>(new job(*this));
                 }
             };
 
