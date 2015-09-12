@@ -58,7 +58,7 @@ namespace f5 {
             bool insert_if_not_found(const V &v) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(v);
-                if ( bound == set.end() || *bound != v ) {
+                if ( bound == set.end() || not(*bound == v) ) {
                     set.insert(bound, v);
                     return true;
                 }
@@ -70,6 +70,32 @@ namespace f5 {
             F for_each(F fn) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 return std::move(std::for_each(set.begin(), set.end(), fn));
+            }
+
+            /// Remove the last item from the set and return it. If the set
+            /// is empty then return the argument passed.
+            typename traits::found_type pop_back(const V &s = V()) {
+                std::unique_lock<std::mutex> lock(mutex);
+                if ( set.empty() ) {
+                    return traits::found_from_V(s);
+                } else {
+                    typename traits::found_type b{traits::found_from_V(set.back())};
+                    set.pop_back();
+                    return b;
+                }
+            }
+
+            /// Remove the value from the set. Returns true if the
+            /// value was removed, false otherwise
+            bool remove(const V &s) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto item = lower_bound(s);
+                if ( item == set.end() )
+                    return false;
+                else {
+                    set.erase(item);
+                    return true;
+                }
             }
 
             /// Remove the items that match the predicate
