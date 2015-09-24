@@ -43,6 +43,21 @@ namespace f5 {
             }
         };
 
+        /// Policy that promotes held weak_ptr instances to their shared_ptr
+        /// counterpart.
+        template<typename V>
+        struct weak_ptr_promotion_policy {
+            using found_type = decltype(V().lock());
+            using value_return_type = decltype(V().lock());
+
+            static found_type found_from_V(V v) {
+                return v.lock();
+            }
+            static value_return_type value_from_V(V v) {
+                return v.lock();
+            }
+        };
+
         /// Use the values by default in the container interface
         template<typename V>
         struct container_default_policy {
@@ -52,6 +67,11 @@ namespace f5 {
         template<typename V>
         struct container_default_policy<std::unique_ptr<V>> {
             using type = pointer_dereference_policy<std::unique_ptr<V>>;
+        };
+        /// Promote weak_ptr by default
+        template<typename V>
+        struct container_default_policy<std::weak_ptr<V>> {
+            using type = weak_ptr_promotion_policy<std::weak_ptr<V>>;
         };
 
 

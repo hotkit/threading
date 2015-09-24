@@ -1,3 +1,42 @@
+2015-09-21  Kirit Saelensminde  <kirit@felspar.com>
+ `tsmap::add_if_not_found` now takes a second optional lambda which is called if the value was not entered into the map.
+
+2015-09-02  Kirit Saelensminde  <kirit@felspar.com>
+ Allow a value of zero for the limit in the limiter and fix an off by one value.
+ Add a todo about the use of the `shared_ptr` for eventfd jobs.
+
+2015-08-30  Kirit Saelensminde  <kirit@felspar.com>
+ `tsset` now has a `remove` method that takes a value that it will remove if the value is in the set.
+
+2015-08-23  Kirit Saelensminde  <kirit@felspar.com>
+ New `f5::eventfd::limiter` which allows task completions to be notified through a file descriptor suitable for use with Boost ASIO reactors.
+
+2015-07-21  Kirit Saelensminde  <kirit@felspar.com>
+ Rename `tsring::emplace_back` to `push_back`. Add a version that takes a lambda conditional.
+
+2015-07-19  Kirit Saelensminde  <kirit@felspar.com>
+ Added initial version of `tsring`, which implements a ring (or circular) buffer.
+
+2015-06-29  Kirit Saelensminde  <kirit@felspar.com>
+ `tsset` gets a `pop_back` member which will pull off and return the highest item in the set.
+
+2015-06-25  Kirit Saelensminde  <kirit@felspar.com>
+ * Add a `f5::threading::boost_asio::reactor_pool` thread pool suitable for use with the `boost::asio::io_service`.
+ * Fix the interface to `tsmap::find` so that it is safe. We can't returna pointer to the value, we need to return a copy otherwise there is a race if values are also being inserted.
+
+2015-06-21  Kirit Saelensminde  <kirit@felspar.com>
+ * Allow the `f5::tsmap` to be iterated over.
+ * Add an initial `f5::tsset` implementation.
+
+2015-06-20  Kirit Saelensminde  <kirit@felspar.com>
+ * Allow fetching of a size estimate from the `tsmap`.
+ * Add  a `tsmap::remove_if` member that allows items to be removed.
+
+2015-06-18  Kirit Saelensminde  <kirit@felspar.com>
+ * Add a policy for promoting weak pointers to shared pointers.
+ * Add `insert_or_assign_if` which allows atomic overwrite of values under user control.
+ * `insert_or_assign` needs to wrap the values it returns in the right way.
+
 2015-06-17  Kirit Saelensminde  <kirit@felspar.com>
  Added `f5::threading::tsmap::insert_or_assign`.
 

@@ -47,13 +47,19 @@ namespace f5 {
                     });
             }
         public:
+            /// Return an estimate of the size of the map.
+            std::size_t size() {
+                std::unique_lock<std::mutex> lock(mutex);
+                return map.size();
+            }
+
             /// Return a pointer to the value if found. If not found then
             /// return nullptr
-            typename traits::found_type find(const K &k) const {
+            typename traits::found_type find(const K &k, const V &s = V()) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto found = lower_bound(k);
                 if ( found == map.end() ) {
-                    return typename traits::found_type();
+                    return traits::found_from_V(s);
                 } else {
                     return traits::found_from_V(found->second);
                 }
@@ -67,13 +73,38 @@ namespace f5 {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
-                    return bound->second = a;
+                    // We have a cache hit, so assign
+                    return traits::value_from_V(bound->second = a);
                 } else {
+                    // We have a cache miss so insert
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(a));
-                    return map.back().second;
+                    return traits::value_from_V(map.back().second);
                 }
+            }
+            /// Adds the item if the key is not found. If the key is found and
+            /// the predicate returns true then replaces the value with the
+            /// one returned by the lambda
+            template<typename C, typename F>
+            typename traits::value_return_type insert_or_assign_if(
+                const K &k, C predicate, F lambda
+            ) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto bound = lower_bound(k);
+                if ( bound != map.end() && bound->first == k ) {
+                    // Cache hit so check the predicate
+                    if ( predicate(bound->second) ) {
+                        return traits::value_from_V(bound->second = lambda());
+                    } else {
+                        return traits::value_from_V(bound->second);
+                    }
+                }
+                // Cache miss, so use the lambda to get the value to insert
+                return traits::value_from_V(
+                    map.emplace(bound, std::piecewise_construct,
+                        std::forward_as_tuple(k),
+                        std::forward_as_tuple(lambda()))->second);
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the item
@@ -84,28 +115,65 @@ namespace f5 {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
+                    // A cache hit, so return what we have
                     return traits::value_from_V(bound->second);
                 }
+                // Insert before returning the new value
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(args...))->second);
             }
             /// Adds a value at the key if there isn't one there already.
-            /// Returns a reference to the newly constructed item
-            template<typename F>
+            /// Returns a reference to the newly constructed item. If
+            /// the item is arleady in the map then the second lambda is
+            /// executed.
+            template<typename F, typename M>
             typename traits::value_return_type add_if_not_found(
-                const K &k, F lambda
+                const K &k, F lambda, M miss
             ) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
+                    // Cache hit so don't run the lambda
+                    miss(traits::value_from_V(bound->second));
                     return traits::value_from_V(bound->second);
                 }
+                // Cache miss, so use the lambda to get the value to insert
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(lambda()))->second);
+            }
+            /// Adds a value at the key if there isn't one there already.
+            template<typename F>
+            typename traits::value_return_type add_if_not_found(
+                const K &k, F lambda
+            ) {
+                return add_if_not_found(k, lambda, [](const auto &){});
+            }
+
+            /// Iterate over the content of the map
+            template<typename F>
+            F for_each(F fn) const {
+                std::unique_lock<std::mutex> lock(mutex);
+                std::for_each(map.begin(), map.end(),
+                    [fn](const auto &v) {
+                        fn(v.first, v.second);
+                    });
+                return std::move(fn);
+            }
+
+            /// Removes values where the predicate is true. Returns how
+            /// many are left.
+            template<typename Pr>
+            std::size_t remove_if(Pr predicate) {
+                std::unique_lock<std::mutex> lock(mutex);
+                map.erase(std::remove_if(map.begin(), map.end(),
+                    [predicate](const auto &v) {
+                        return predicate(v.first, v.second);
+                    }), map.end());
+                return map.size();
             }
         };
 
