@@ -125,15 +125,18 @@ namespace f5 {
                         std::forward_as_tuple(args...))->second);
             }
             /// Adds a value at the key if there isn't one there already.
-            /// Returns a reference to the newly constructed item
-            template<typename F>
+            /// Returns a reference to the newly constructed item. If
+            /// the item is arleady in the map then the second lambda is
+            /// executed.
+            template<typename F, typename M>
             typename traits::value_return_type add_if_not_found(
-                const K &k, F lambda
+                const K &k, F lambda, M miss
             ) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
                     // Cache hit so don't run the lambda
+                    miss(traits::value_from_V(bound->second));
                     return traits::value_from_V(bound->second);
                 }
                 // Cache miss, so use the lambda to get the value to insert
@@ -141,6 +144,13 @@ namespace f5 {
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
                         std::forward_as_tuple(lambda()))->second);
+            }
+            /// Adds a value at the key if there isn't one there already.
+            template<typename F>
+            typename traits::value_return_type add_if_not_found(
+                const K &k, F lambda
+            ) {
+                return add_if_not_found(k, lambda, [](const auto &){});
             }
 
             /// Iterate over the content of the map

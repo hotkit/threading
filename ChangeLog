@@ -1,3 +1,6 @@
+2015-09-21  Kirit Saelensminde  <kirit@felspar.com>
+ `tsmap::add_if_not_found` now takes a second optional lambda which is called if the value was not entered into the map.
+
 2015-09-02  Kirit Saelensminde  <kirit@felspar.com>
  Allow a value of zero for the limit in the limiter and fix an off by one value.
  Add a todo about the use of the `shared_ptr` for eventfd jobs.
