@@ -25,15 +25,61 @@ namespace f5 {
         namespace eventfd {
 
 
+            /// Store a Boost ASIO compatible eventfd file descriptor. It is
+            /// a drop in replacement for the underlying Boost
+            /// stream_descriptor, but ensures that the file descriptor
+            /// is properly established.
+            class fd {
+                boost::asio::posix::stream_descriptor descriptor;
+
+                /// Get the file descriptor, or throw an exception
+                static auto get_eventfd() {
+                    auto fd = ::eventfd(0, 0);
+                    if ( fd < 0 ) {
+                        std::error_code error(errno, std::system_category());
+                        throw fostlib::exceptions::null(
+                            "Bad eventfd file descriptor", error.message().c_str());
+                    }
+                    return fd;
+                }
+
+            public:
+                /// Construct an eventfd with a file descriptor in it
+                fd(boost::asio::io_service &ios)
+                : descriptor(ios, get_eventfd()) {
+                }
+
+                /// Fetch a reference to the stream_descriptor
+                operator boost::asio::posix::stream_descriptor &() {
+                    return descriptor;
+                }
+
+                /// Forward call to embedded descriptor
+                template<typename... U>
+                auto async_read_some(U&&... u) {
+                    return descriptor.async_read_some(std::forward<U>(u)...);
+                }
+
+                /// Forward call to embedded descriptor
+                template<typename... U>
+                auto async_write_some(U&&... u) {
+                    return descriptor.async_write_some(std::forward<U>(u)...);
+                }
+            };
+
+
             /// Allows for a limit to be placed on work through a
-            /// Boost ASIO reactor.
+            /// Boost ASIO reactor. Jobs can be added up to a specified
+            /// limit. If the limit is reached then the producer waits for
+            /// the consumer to finish at least one job before starting up
+            /// again.
             class limiter {
                 /// The IO service
                 boost::asio::io_service &service;
                 /// The yield context that we can use
                 boost::asio::yield_context &yield;
                 /// The file descriptor
-                boost::asio::posix::stream_descriptor fd;
+                eventfd::fd fd;
                 /// The limit before we block waiting for some of the work
                 /// to complete.
                 const uint64_t m_limit;
@@ -52,23 +98,12 @@ namespace f5 {
                     m_outstanding -= count;
                     return count;
                 }
-
-                /// Get the file descriptor, or throw an exception
-                static auto get_eventfd() {
-                    auto fd = ::eventfd(0, 0);
-                    if ( fd < 0 ) {
-                        std::error_code error(errno, std::system_category());
-                        throw fostlib::exceptions::null(
-                            "Bad eventfd file descriptor", error.message().c_str());
-                    }
-                    return fd;
-                }
             public:
                 /// Construct with a given limit
                 limiter(
                     boost::asio::io_service &ios, boost::asio::yield_context &y, uint64_t limit
                 ) : service(ios), yield(y),
-                    fd(ios, get_eventfd()),
+                    fd(ios),
                     m_limit(limit),
                     m_outstanding{}
                 {}
