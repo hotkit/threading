@@ -102,7 +102,7 @@ namespace f5 {
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
                 uint64_t wait(boost::asio::yield_context &yield) {
-                    auto count = fd.read(yield);
+                    const uint64_t count = fd.read(yield);
                     assert(count <= m_outstanding);
                     m_outstanding -= count;
                     return count;
