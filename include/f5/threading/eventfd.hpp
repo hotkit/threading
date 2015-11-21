@@ -78,6 +78,41 @@ namespace f5 {
                 }
             };
 
+
+            /// Allow for an unlimited produer/consumer which never
+            /// blocks due to the producer trying to send through too
+            /// much work.
+            class unlimited {
+                /// The IO service
+                boost::asio::io_service &service;
+                /// The file descriptor
+                eventfd::fd fd;
+
+            public:
+                /// Constructs the producer/consumer channel
+                unlimited(
+                    boost::asio::io_service &ios
+                ) : service(ios), fd(ios) {
+                }
+
+                /// Return the IO service
+                boost::asio::io_service &get_io_service() {
+                    return service;
+                }
+
+                /// Send the amount of work produced to the consumer
+                /// side.
+                void produced(uint64_t count = 1) {
+                    boost::asio::async_write(fd,
+                        boost::asio::buffer(&count, sizeof(count)),
+                        [](auto error, auto bytes) {
+                        });
+                }
+                /// Return how much to consume. Yields until there is
+                /// something available.
+                uint64_t consume(boost::asio::yield_context &yield) {
+                    return fd.read(yield);
+                }
             };
 
 
