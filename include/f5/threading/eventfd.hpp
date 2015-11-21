@@ -65,6 +65,19 @@ namespace f5 {
                 auto async_write_some(U&&... u) {
                     return descriptor.async_write_some(std::forward<U>(u)...);
                 }
+
+                /// Read the current value from the file descriptor. Yields
+                /// until it is available.
+                int64_t read(boost::asio::yield_context &yield) {
+                    uint64_t count = 0;
+                    boost::asio::streambuf buffer;
+                    boost::asio::async_read(descriptor, buffer,
+                        boost::asio::transfer_exactly(sizeof(count)), yield);
+                    buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
+                    return count;
+                }
+            };
+
             };
 
 
@@ -89,11 +102,7 @@ namespace f5 {
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
                 uint64_t wait(boost::asio::yield_context &yield) {
-                    uint64_t count = 0;
-                    boost::asio::streambuf buffer;
-                    boost::asio::async_read(fd, buffer,
-                        boost::asio::transfer_exactly(sizeof(count)), yield);
-                    buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
+                    auto count = fd.read(yield);
                     assert(count <= m_outstanding);
                     m_outstanding -= count;
                     return count;
