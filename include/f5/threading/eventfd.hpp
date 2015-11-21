@@ -32,9 +32,10 @@ namespace f5 {
             class fd {
                 boost::asio::posix::stream_descriptor descriptor;
 
-                /// Get the file descriptor, or throw an exception
-                static auto get_eventfd() {
-                    auto fd = ::eventfd(0, 0);
+            public:
+                /// Get a new file descriptor, or throw an exception
+                static auto create(unsigned int initval = 0, int flags = 0) {
+                    auto fd = ::eventfd(initval, flags);
                     if ( fd < 0 ) {
                         std::error_code error(errno, std::system_category());
                         throw fostlib::exceptions::null(
@@ -43,10 +44,9 @@ namespace f5 {
                     return fd;
                 }
 
-            public:
                 /// Construct an eventfd with a file descriptor in it
                 fd(boost::asio::io_service &ios)
-                : descriptor(ios, get_eventfd()) {
+                : descriptor(ios, create()) {
                 }
 
                 /// Fetch a reference to the stream_descriptor
