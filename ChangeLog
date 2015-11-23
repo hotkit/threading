@@ -1,4 +1,7 @@
 2015-09-26  Kirit Saelensminde  <kirit@felspar.com>
+ Add `unlimited` channel for `eventfd` on Linux.
+
+2015-09-26  Kirit Saelensminde  <kirit@felspar.com>
  Add `remove` to `tsmap`.
 
 2015-09-21  Kirit Saelensminde  <kirit@felspar.com>
