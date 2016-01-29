@@ -164,6 +164,19 @@ namespace f5 {
                 return std::move(fn);
             }
 
+            /// Remove the requested key (if found). Returns true if the
+            /// key and its value were removed
+            bool remove(const K &k) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto bound = lower_bound(k);
+                if ( bound == map.end() )
+                    return false;
+                else {
+                    map.erase(bound);
+                    return true;
+                }
+            }
+
             /// Removes values where the predicate is true. Returns how
             /// many are left.
             template<typename Pr>
