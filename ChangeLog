@@ -1,3 +1,6 @@
+2016-04-15  Kirit Saelensminde  <kirit@felspar.com>
+ Relax the type requirements on the key values in `tsmap::find`.
+
 2015-09-26  Kirit Saelensminde  <kirit@felspar.com>
  Add `unlimited` channel for `eventfd` on Linux.
 
