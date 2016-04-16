@@ -1,3 +1,6 @@
+2016-04-16  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a bug in `tsmap` where it could return the wrong item in repsonse to a `find`.
+
 2016-04-15  Kirit Saelensminde  <kirit@felspar.com>
  Relax the type requirements on the key values in `tsmap::find`.
 

@@ -60,11 +60,11 @@ namespace f5 {
             template<typename L>
             typename traits::found_type find(const L &k, const V &s = V()) const {
                 std::unique_lock<std::mutex> lock(mutex);
-                auto found = lower_bound(k);
-                if ( found == map.end() ) {
+                auto bound = lower_bound(k);
+                if ( bound == map.end() || k != bound->first ) {
                     return traits::found_from_V(s);
                 } else {
-                    return traits::found_from_V(found->second);
+                    return traits::found_from_V(bound->second);
                 }
             }
 
