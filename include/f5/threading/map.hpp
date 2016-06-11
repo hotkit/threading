@@ -34,13 +34,15 @@ namespace f5 {
             using traits = P;
 
             /// Return the lower bound for the key
-            auto lower_bound(const K &k) const {
+            template<typename L>
+            auto lower_bound(const L &k) const {
                 return std::lower_bound(map.begin(), map.end(), k,
                     [](const auto &l, auto r) {
                         return l.first < r;
                     });
             }
-            auto lower_bound(const K &k) {
+            template<typename L>
+            auto lower_bound(const L &k) {
                 return std::lower_bound(map.begin(), map.end(), k,
                     [](const auto &l, auto r) {
                         return l.first < r;
@@ -55,13 +57,14 @@ namespace f5 {
 
             /// Return a pointer to the value if found. If not found then
             /// return nullptr
-            typename traits::found_type find(const K &k, const V &s = V()) const {
+            template<typename L>
+            typename traits::found_type find(const L &k, const V &s = V()) const {
                 std::unique_lock<std::mutex> lock(mutex);
-                auto found = lower_bound(k);
-                if ( found == map.end() ) {
+                auto bound = lower_bound(k);
+                if ( bound == map.end() || k != bound->first ) {
                     return traits::found_from_V(s);
                 } else {
-                    return traits::found_from_V(found->second);
+                    return traits::found_from_V(bound->second);
                 }
             }
 

@@ -1,3 +1,12 @@
+2016-05-04  Kirit Saelensminde  <kirit@felspar.com>
+ The `boost_asio` namespace has been moved so that it can be used in multiple F5 libraries.
+
+2016-04-16  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a bug in `tsmap` where it could return the wrong item in response to a `find`.
+
+2016-04-15  Kirit Saelensminde  <kirit@felspar.com>
+ Relax the type requirements on the key values in `tsmap::find`.
+
 2015-09-26  Kirit Saelensminde  <kirit@felspar.com>
  Add `unlimited` channel for `eventfd` on Linux.
 
