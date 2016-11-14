@@ -64,8 +64,7 @@ namespace f5 {
             ~reactor_pool() {
                 work.reset();
                 ios.stop();
-                std::for_each(threads.begin(), threads.end(),
-                    [](auto &t) { t.join(); });
+                for ( auto &t : threads ) t.join();
             }
 
             /// Make non-copyable and non assignable
