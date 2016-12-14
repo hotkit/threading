@@ -1,5 +1,5 @@
 /*
-    Copyright 2015, Felspar Co Ltd. http://www.kirit.com/f5
+    Copyright 2015-2016, Felspar Co Ltd. http://www.kirit.com/f5
     Distributed under the Boost Software License, Version 1.0.
     See accompanying file LICENSE_1_0.txt or copy at
         http://www.boost.org/LICENSE_1_0.txt
@@ -37,14 +37,14 @@ namespace f5 {
             template<typename L>
             auto lower_bound(const L &k) const {
                 return std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, auto r) {
+                    [](const auto &l, const auto &r) {
                         return l.first < r;
                     });
             }
             template<typename L>
             auto lower_bound(const L &k) {
                 return std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, auto r) {
+                    [](const auto &l, const auto &r) {
                         return l.first < r;
                     });
             }
