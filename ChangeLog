@@ -1,3 +1,6 @@
+2016-12-17  Kirit Saelensminde  <kirit@felspar.com>
+ Allow for fetching of the Boost.ASIO work pool thread count.
+
 2016-12-14  Kirit Saelensminde  <kirit@felspar.com>
  `lower_bound` on `tsmap` takes the key value by reference not by copy.
 

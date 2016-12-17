@@ -71,6 +71,11 @@ namespace f5 {
             reactor_pool(const reactor_pool &) = delete;
             reactor_pool &operator = (const reactor_pool &) = delete;
 
+            /// Return the number of threads servicing the pool
+            std::size_t size() const {
+                return threads.size();
+            }
+
             /// Return the contained io_service instance
             boost::asio::io_service &get_io_service() {
                 return ios;
