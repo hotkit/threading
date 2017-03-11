@@ -164,7 +164,7 @@ namespace f5 {
                     return service;
                 }
 
-                /// The number of outstanding jobs
+                /// The maximum number of outstanding jobs
                 uint64_t limit() const {
                     return m_limit;
                 }
