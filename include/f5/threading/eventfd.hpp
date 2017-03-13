@@ -129,7 +129,7 @@ namespace f5 {
                 eventfd::fd fd;
                 /// The limit before we block waiting for some of the work
                 /// to complete.
-                const uint64_t m_limit;
+                uint64_t m_limit;
                 /// The amount of outstanding work
                 uint64_t m_outstanding;
 
@@ -161,6 +161,10 @@ namespace f5 {
                     return service;
                 }
 
+                /// Increase the limit
+                uint64_t increase_limit(uint64_t l) {
+                    return m_limit += l;
+                }
                 /// The maximum number of outstanding jobs
                 uint64_t limit() const {
                     return m_limit;
