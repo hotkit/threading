@@ -34,17 +34,13 @@ namespace f5 {
             /// Communication between producer and consumer about how
             /// many items are in the channel
             threading::eventfd::unlimited signal;
-            /// The number of items in the deque that we know we can pop
-            /// because the number has already been given to us by the
-            /// signal.
-            uint64_t poppable;
         public:
             /// The type of item that is put in the channel
             using value_type = T;
 
             /// Construct for the specified IO service
             channel(boost::asio::io_service &ios)
-            : signal{ios}, poppable{} {
+            : signal{ios} {
             }
 
             /// Produce an item to be consued
@@ -57,14 +53,26 @@ namespace f5 {
 
             /// Consume an item
             T consume(boost::asio::yield_context &yield) {
-                while ( not poppable ) {
-                    poppable += signal.consume(yield);
+                while ( true ) {
+                    auto check_size = [this]() {
+                        std::unique_lock<std::mutex> lock{exclusive};
+                        return items.size();
+                    };
+                    while ( not check_size() ) {
+                        signal.consume(yield);
+                    }
+                    std::lock_guard<std::mutex> lock{exclusive};
+                    /// We need to recheck for there being items again
+                    /// because we released the lock above and another
+                    /// thread could have come in and stolen the item.
+                    /// If there isn't one we'll loop around again until
+                    /// there is.
+                    if ( items.size() ) {
+                        auto ret = std::move(items.front());
+                        items.pop_front();
+                        return ret;
+                    }
                 }
-                std::lock_guard<std::mutex> lock{exclusive};
-                auto ret = std::move(items.front());
-                items.pop_front();
-                --poppable;
-                return ret;
             }
         };
 
