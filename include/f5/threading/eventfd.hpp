@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2016, Felspar Co Ltd. http://www.kirit.com/f5
+    Copyright 2015-2017, Felspar Co Ltd. http://www.kirit.com/f5
     Distributed under the Boost Software License, Version 1.0.
     See accompanying file LICENSE_1_0.txt or copy at
         http://www.boost.org/LICENSE_1_0.txt
@@ -14,6 +14,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
 
+#include <atomic>
 #include <system_error>
 
 
@@ -129,15 +130,14 @@ namespace f5 {
                 eventfd::fd fd;
                 /// The limit before we block waiting for some of the work
                 /// to complete.
-                uint64_t m_limit;
+                std::atomic<uint64_t> m_limit;
                 /// The amount of outstanding work
-                uint64_t m_outstanding;
+                std::atomic<uint64_t> m_outstanding;
 
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
                 uint64_t wait(boost::asio::yield_context &yield) {
                     const uint64_t count = fd.async_read(yield);
-                    assert(count <= m_outstanding);
                     m_outstanding -= count;
                     return count;
                 }
@@ -167,11 +167,11 @@ namespace f5 {
                 }
                 /// The maximum number of outstanding jobs
                 uint64_t limit() const {
-                    return m_limit;
+                    return m_limit.load();
                 }
                 /// The current number of outstanding jobs
                 uint64_t outstanding() const {
-                    return m_outstanding;
+                    return m_outstanding.load();
                 }
 
                 /// A proxy for an outstanding job
@@ -218,8 +218,11 @@ namespace f5 {
 
                 /// Add another outstanding job and return it
                 std::unique_ptr<job> next_job(boost::asio::yield_context &yield) {
-                    while ( m_limit && m_outstanding >= m_limit )
+                    while ( true ) {
+                        const auto limit = m_limit.load();
+                        if ( not limit || m_outstanding.load() < limit ) break;
                         wait(yield);
+                    }
                     ++m_outstanding;
                     return std::unique_ptr<job>(new job(*this));
                 }
