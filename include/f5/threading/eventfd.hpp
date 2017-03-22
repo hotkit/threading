@@ -165,6 +165,10 @@ namespace f5 {
                 uint64_t increase_limit(uint64_t l) {
                     return m_limit += l;
                 }
+                /// Decrease the limit
+                uint64_t decrease_limit(uint64_t l) {
+                    return m_limit -= l;
+                }
                 /// The maximum number of outstanding jobs
                 uint64_t limit() const {
                     return m_limit.load();
