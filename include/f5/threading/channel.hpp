@@ -12,6 +12,7 @@
 #include <f5/threading/eventfd.hpp>
 
 #include <deque>
+#include <experimental/optional>
 #include <mutex>
 
 
@@ -34,6 +35,13 @@ namespace f5 {
             /// Communication between producer and consumer about how
             /// many items are in the channel
             threading::eventfd::unlimited signal;
+            /// Return and pop the head of the deque. There must already
+            /// be a lock covering the deque
+            T pop_head() {
+                auto ret = std::move(items.front());
+                items.pop_front();
+                return ret;
+            }
         public:
             /// The type of item that is put in the channel
             using value_type = T;
@@ -51,7 +59,8 @@ namespace f5 {
                 signal.produced();
             }
 
-            /// Consume an item
+            /// Consume an item, block the coroutine until one becomes
+            /// available.
             T consume(boost::asio::yield_context &yield) {
                 while ( true ) {
                     auto check_size = [this]() {
@@ -68,10 +77,17 @@ namespace f5 {
                     /// If there isn't one we'll loop around again until
                     /// there is.
                     if ( items.size() ) {
-                        auto ret = std::move(items.front());
-                        items.pop_front();
-                        return ret;
+                        return pop_head();
                     }
+                }
+            }
+            /// Return a job if one is available
+            std::experimental::optional<T> consume() {
+                std::unique_lock<std::mutex> lock{exclusive};
+                if ( items.size() ) {
+                    return pop_head();
+                } else {
+                    return {};
                 }
             }
         };
