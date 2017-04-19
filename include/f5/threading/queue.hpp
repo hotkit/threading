@@ -26,7 +26,9 @@ namespace f5 {
 
         public:
             /// Construct a new queue with the specified capacity
-            queue(boost::asio::io_service &ios, uint64_t limit);
+            queue(boost::asio::io_service &ios, uint64_t limit)
+            : buffer(limit), throttle(ios, limit) {
+            }
 
             /// Return the IO service
             boost::asio::io_service &get_io_service() {
@@ -35,16 +37,21 @@ namespace f5 {
 
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
-            std::size_t produce(V v, boost::asio::yield_context &);
+            std::size_t produce(V v, boost::asio::yield_context &yield) {
+                return buffer.push_back([&]() {
+                    auto job = throttle.next_job(yield);
+                    return std::make_pair(job, std::move(v));
+                });
+            }
 
             /// Yield until a value is available to consume. The space in
             /// the buffer is freed up straight away.
-            V consume(boost::asio::yield_context &);
+            V consume(boost::asio::yield_context &yield);
 
             /// Yield until all of the work that has been produced has been
             /// consumed.
             void wait_for_all_outstanding(boost::asio::yield_context &yield) {
-                throttel.wait_for_all_outstanding(yield);
+                throttle.wait_for_all_outstanding(yield);
             }
         };
 
