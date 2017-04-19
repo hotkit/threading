@@ -52,7 +52,7 @@ namespace f5 {
             }
 
             /// Produce an item to be consued
-            void produce(T&&t) {
+            void produce(T t) {
                 std::unique_lock<std::mutex> lock{exclusive};
                 items.push_back(std::move(t));
                 lock.unlock();
