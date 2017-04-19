@@ -23,6 +23,7 @@ namespace f5 {
         class queue {
             tsring<std::pair<std::unique_ptr<eventfd::limiter::job>, V>> buffer;
             eventfd::limiter throttle;
+            eventfd::unlimited available;
 
         public:
             /// Construct a new queue with the specified capacity
@@ -38,10 +39,12 @@ namespace f5 {
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
             std::size_t produce(V v, boost::asio::yield_context &yield) {
-                return buffer.push_back([&]() {
-                    auto job = throttle.next_job(yield);
-                    return std::make_pair(job, std::move(v));
+                auto job = throttle.next_job(yield);
+                const auto ret = buffer.push_back([&]() {
+                    return std::make_pair(std::move(job), std::move(v));
                 });
+                available.produced();
+                return ret;
             }
 
             /// Yield until a value is available to consume. The space in
