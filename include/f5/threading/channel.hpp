@@ -43,12 +43,14 @@ namespace f5 {
                 return ret;
             }
         public:
+            /// The type of storage used by the channel
+            using store_type = S;
             /// The type of item that is put in the channel
             using value_type = T;
 
             /// Construct for the specified IO service
-            channel(boost::asio::io_service &ios)
-            : signal{ios} {
+            channel(boost::asio::io_service &ios, S s = std::declval<S>())
+            : items(std::move(s)), signal{ios} {
             }
 
             /// Produce an item to be consued

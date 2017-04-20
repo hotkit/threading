@@ -23,13 +23,14 @@ namespace f5 {
         template<typename V>
         class queue {
             using channel_job = std::pair<std::unique_ptr<eventfd::limiter::job>, V>;
-            channel<channel_job, boost::circular_buffer<channel_job>> buffer;
+            using channel_type = channel<channel_job, boost::circular_buffer<channel_job>>;
+            channel_type buffer;
             eventfd::limiter throttle;
 
         public:
             /// Construct a new queue with the specified capacity
             queue(boost::asio::io_service &ios, uint64_t limit)
-            : buffer(limit), throttle(ios, limit) {
+            : buffer(ios, typename channel_type::store_type(limit)), throttle(ios, limit) {
             }
 
             /// Return the IO service
@@ -41,13 +42,13 @@ namespace f5 {
             /// there is space for the item. Returns the remaining capacity
             void produce(V v, boost::asio::yield_context &yield) {
                 auto job = throttle.next_job(yield);
-                buffer.push-back(std::make_pair(std::move(job), std::move(v)));
+                buffer.produce(std::make_pair(std::move(job), std::move(v)));
             }
 
             /// Yield until a value is available to consume. The space in
             /// the buffer is freed up straight away.
             V consume(boost::asio::yield_context &yield) {
-                return buffer.consume(yield);
+                return buffer.consume(yield).second;
             }
 
             /// Yield until all of the work that has been produced has been
