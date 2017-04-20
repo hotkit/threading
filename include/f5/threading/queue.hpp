@@ -6,8 +6,9 @@
 */
 
 
-#include <f5/threading/eventfd.hpp>
-#include <f5/threading/ring.hpp>
+#include <f5/threading/channel.hpp>
+
+#include <boost/circular_buffer.hpp>
 
 
 namespace f5 {
@@ -21,9 +22,9 @@ namespace f5 {
         /// similar construct which accepts unlimited items see channel.
         template<typename V>
         class queue {
-            tsring<std::pair<std::unique_ptr<eventfd::limiter::job>, V>> buffer;
+            using channel_job = std::pair<std::unique_ptr<eventfd::limiter::job>, V>;
+            channel<channel_job, boost::circular_buffer<channel_job>> buffer;
             eventfd::limiter throttle;
-            eventfd::unlimited available;
 
         public:
             /// Construct a new queue with the specified capacity
@@ -38,18 +39,16 @@ namespace f5 {
 
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
-            std::size_t produce(V v, boost::asio::yield_context &yield) {
+            void produce(V v, boost::asio::yield_context &yield) {
                 auto job = throttle.next_job(yield);
-                const auto ret = buffer.push_back([&]() {
-                    return std::make_pair(std::move(job), std::move(v));
-                });
-                available.produced();
-                return ret;
+                buffer.push-back(std::make_pair(std::move(job), std::move(v)));
             }
 
             /// Yield until a value is available to consume. The space in
             /// the buffer is freed up straight away.
-            V consume(boost::asio::yield_context &yield);
+            V consume(boost::asio::yield_context &yield) {
+                return buffer.consume(yield);
+            }
 
             /// Yield until all of the work that has been produced has been
             /// consumed.

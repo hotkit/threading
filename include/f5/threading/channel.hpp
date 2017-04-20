@@ -26,12 +26,12 @@ namespace f5 {
         /// coroutines. In this channel design the producers may always
         /// enque items into the channel without having to wait for the
         /// consumer to make room.
-        template<typename T>
+        template<typename T, typename S = std::deque<T>>
         class channel {
             /// Mutex that controls access to the queue items
             std::mutex exclusive;
             /// The current channel content
-            std::deque<T> items;
+            S items;
             /// Communication between producer and consumer about how
             /// many items are in the channel
             threading::eventfd::unlimited signal;
