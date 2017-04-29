@@ -32,6 +32,13 @@ namespace f5 {
             std::unique_ptr<boost::asio::io_service::work> work;
 
         public:
+            /// Default construct a reactor pool with thread count matching
+            /// the hardware and that will terminate threads if exceptions
+            /// leak
+            reactor_pool()
+            : reactor_pool([](){ return false; }) {
+            }
+
             /// Construct a pool with the requested thread count and using
             /// the passed in exception handler. The handler returns true
             /// if it wishes this thread to continue to handle jobs. If it
@@ -39,9 +46,7 @@ namespace f5 {
             /// until the pool itself passes out of scope.
             template<typename F>
             explicit reactor_pool(
-                F exception_handler = []() -> bool {
-                    return false;
-                },
+                F exception_handler,
                 std::size_t thread_count = std::thread::hardware_concurrency()
             ) : work(std::make_unique<boost::asio::io_service::work>(ios)) {
                 for ( auto t = 0u; t != thread_count; ++t ) {
