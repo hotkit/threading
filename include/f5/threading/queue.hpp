@@ -6,9 +6,14 @@
 */
 
 
-#include <f5/threading/channel.hpp>
+#pragma once
 
-#include <boost/circular_buffer.hpp>
+
+#include <f5/threading/eventfd.hpp>
+
+#include <deque>
+#include <experimental/optional>
+#include <mutex>
 
 
 namespace f5 {
@@ -17,44 +22,76 @@ namespace f5 {
     namespace boost_asio {
 
 
-        /// Combine a circular buffer and an eventfd limiter for mulitple
-        /// producers and consumers in a capacity limited manner. For a
-        /// similar construct which accepts unlimited items see channel.
-        template<typename V>
+        /// A producer/consumer queue compatible with Boost.ASIO and
+        /// coroutines. In this queue design the producers may always
+        /// enque items into the queue without having to wait for the
+        /// consumer to make room. For a capacity limited version of a
+        /// similar concept see channel.
+        template<typename T, typename S = std::deque<T>>
         class queue {
-            using channel_job = std::pair<std::unique_ptr<eventfd::limiter::job>, V>;
-            using channel_type = channel<channel_job, boost::circular_buffer<channel_job>>;
-            channel_type buffer;
-            eventfd::limiter throttle;
-
+            /// Mutex that controls access to the queue items
+            std::mutex exclusive;
+            /// The current queue content
+            S items;
+            /// Communication between producer and consumer about how
+            /// many items are in the channel
+            threading::eventfd::unlimited signal;
+            /// Return and pop the head of the deque. There must already
+            /// be a lock covering the deque
+            T pop_head() {
+                auto ret = std::move(items.front());
+                items.pop_front();
+                return ret;
+            }
         public:
-            /// Construct a new queue with the specified capacity
-            queue(boost::asio::io_service &ios, uint64_t limit)
-            : buffer(ios, typename channel_type::store_type(limit)), throttle(ios, limit) {
+            /// The type of storage used by the queue
+            using store_type = S;
+            /// The type of item that is put in the queue
+            using value_type = T;
+
+            /// Construct for the specified IO service
+            queue(boost::asio::io_service &ios, S s = std::declval<S>())
+            : items(std::move(s)), signal{ios} {
             }
 
-            /// Return the IO service
-            boost::asio::io_service &get_io_service() {
-                return throttle.get_io_service();
+            /// Produce an item to be consued
+            void produce(T t) {
+                std::unique_lock<std::mutex> lock{exclusive};
+                items.push_back(std::move(t));
+                lock.unlock();
+                signal.produced();
             }
 
-            /// Add a new item to the buffer. The coroutine yields until
-            /// there is space for the item. Returns the remaining capacity
-            void produce(V v, boost::asio::yield_context &yield) {
-                auto job = throttle.next_job(yield);
-                buffer.produce(std::make_pair(std::move(job), std::move(v)));
+            /// Consume an item, block the coroutine until one becomes
+            /// available.
+            T consume(boost::asio::yield_context &yield) {
+                while ( true ) {
+                    auto check_size = [this]() {
+                        std::unique_lock<std::mutex> lock{exclusive};
+                        return items.size();
+                    };
+                    while ( not check_size() ) {
+                        signal.consume(yield);
+                    }
+                    std::lock_guard<std::mutex> lock{exclusive};
+                    /// We need to recheck for there being items again
+                    /// because we released the lock above and another
+                    /// thread could have come in and stolen the item.
+                    /// If there isn't one we'll loop around again until
+                    /// there is.
+                    if ( items.size() ) {
+                        return pop_head();
+                    }
+                }
             }
-
-            /// Yield until a value is available to consume. The space in
-            /// the buffer is freed up straight away.
-            V consume(boost::asio::yield_context &yield) {
-                return buffer.consume(yield).second;
-            }
-
-            /// Yield until all of the work that has been produced has been
-            /// consumed.
-            void wait_for_all_outstanding(boost::asio::yield_context &yield) {
-                throttle.wait_for_all_outstanding(yield);
+            /// Return a job if one is available
+            std::experimental::optional<T> consume() {
+                std::unique_lock<std::mutex> lock{exclusive};
+                if ( items.size() ) {
+                    return pop_head();
+                } else {
+                    return {};
+                }
             }
         };
 
