@@ -6,6 +6,9 @@
 */
 
 
+#pragma once
+
+
 #include <f5/threading/queue.hpp>
 
 #include <boost/circular_buffer.hpp>
