@@ -1,3 +1,6 @@
+2017-05-15  Kirit Saelensminde  <kirit@felspar.com>
+ Move the `reactor_pool` to `reactor.hpp`
+
 2017-04-25  Kirit Saelensminde  <kirit@felspar.com>
  The `reactor_pool` can be closed and its threads joined at any time.
 
