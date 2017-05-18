@@ -63,6 +63,12 @@ namespace f5 {
             void wait_for_all_outstanding(boost::asio::yield_context &yield) {
                 throttle.wait_for_all_outstanding(yield);
             }
+
+            /// Close the channel. Does not wait for work to complete
+            void close() {
+                throttle.close();
+                buffer.close();
+            }
         };
 
 

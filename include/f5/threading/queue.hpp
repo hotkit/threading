@@ -93,6 +93,11 @@ namespace f5 {
                     return {};
                 }
             }
+
+            /// Close the queue
+            void close() {
+                signal.close();
+            }
         };
 
 

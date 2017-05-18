@@ -78,6 +78,11 @@ namespace f5 {
                     buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
                     return count;
                 }
+
+                /// Close the file descriptor
+                void close() {
+                    descriptor.close();
+                }
             };
 
 
@@ -114,6 +119,11 @@ namespace f5 {
                 /// something available.
                 uint64_t consume(boost::asio::yield_context &yield) {
                     return fd.async_read(yield);
+                }
+
+                /// Close the throttle
+                void close() {
+                    fd.close();
                 }
             };
 
@@ -229,6 +239,11 @@ namespace f5 {
                     }
                     ++m_outstanding;
                     return std::unique_ptr<job>(new job(*this));
+                }
+
+                /// Close it
+                void close() {
+                    fd.close();
                 }
             };
 
