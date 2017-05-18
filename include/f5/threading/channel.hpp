@@ -40,6 +40,10 @@ namespace f5 {
             boost::asio::io_service &get_io_service() {
                 return throttle.get_io_service();
             }
+            /// Return the capacity of the channel
+            std::size_t size() const {
+                return throttle.limit();
+            }
 
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
