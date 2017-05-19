@@ -10,6 +10,7 @@
 
 
 #include <boost/asio/io_service.hpp>
+#include <boost/coroutine/exceptions.hpp>
 
 #include <thread>
 
@@ -57,6 +58,8 @@ namespace f5 {
                                 try {
                                     again = false;
                                     ios.run();
+                                } catch ( boost::coroutines::detail::forced_unwind&  ) {
+                                    throw;
                                 } catch ( ... ) {
                                     again = exception_handler();
                                 }

@@ -9,6 +9,8 @@
 #pragma once
 
 
+#include <boost/coroutine/exceptions.hpp>
+
 #include <future>
 
 
@@ -40,6 +42,9 @@ namespace f5 {
                     try {
                         op(std::forward<decltype(s)>(s)...);
                         blocker.set_value();
+                    } catch ( boost::coroutines::detail::forced_unwind&  ) {
+                        blocker.set_value();
+                        throw;
                     } catch ( ... ) {
                         blocker.set_exception(std::current_exception());
                     }
