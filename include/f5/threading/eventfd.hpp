@@ -9,8 +9,6 @@
 #pragma once
 
 
-#include <fost/core>
-
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
 
@@ -40,8 +38,8 @@ namespace f5 {
                     auto fd = ::eventfd(initval, flags);
                     if ( fd < 0 ) {
                         std::error_code error(errno, std::system_category());
-                        throw fostlib::exceptions::null(
-                            "Bad eventfd file descriptor", error.message().c_str());
+                        throw std::runtime_error(
+                            std::string("Bad eventfd file descriptor: ") + error.message());
                     }
                     return fd;
                 }
