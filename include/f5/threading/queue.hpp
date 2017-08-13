@@ -50,7 +50,7 @@ namespace f5 {
             using value_type = T;
 
             /// Construct for the specified IO service
-            queue(boost::asio::io_service &ios, S s = std::declval<S>())
+            queue(boost::asio::io_service &ios, S s = S())
             : items(std::move(s)), signal{ios} {
             }
 
