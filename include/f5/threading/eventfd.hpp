@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2017, Felspar Co Ltd. http://www.kirit.com/f5
+    Copyright 2015-2018, Felspar Co Ltd. http://www.kirit.com/f5
     Distributed under the Boost Software License, Version 1.0.
     See accompanying file LICENSE_1_0.txt or copy at
         http://www.boost.org/LICENSE_1_0.txt
@@ -68,7 +68,7 @@ namespace f5 {
 
                 /// Read the current value from the file descriptor. Yields
                 /// until it is available.
-                int64_t async_read(boost::asio::yield_context &yield) {
+                int64_t async_read(boost::asio::yield_context yield) {
                     uint64_t count = 0;
                     boost::asio::streambuf buffer;
                     boost::asio::async_read(descriptor, buffer,
@@ -115,7 +115,7 @@ namespace f5 {
                 }
                 /// Return how much to consume. Yields until there is
                 /// something available.
-                uint64_t consume(boost::asio::yield_context &yield) {
+                uint64_t consume(boost::asio::yield_context yield) {
                     return fd.async_read(yield);
                 }
 
@@ -144,7 +144,7 @@ namespace f5 {
 
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
-                uint64_t wait(boost::asio::yield_context &yield) {
+                uint64_t wait(boost::asio::yield_context yield) {
                     const uint64_t count = fd.async_read(yield);
                     m_outstanding -= count;
                     return count;
@@ -160,7 +160,7 @@ namespace f5 {
                 {}
                 /// The destructor ensures that there is no outstanding work
                 /// before it completes
-                void wait_for_all_outstanding(boost::asio::yield_context &yield) {
+                void wait_for_all_outstanding(boost::asio::yield_context yield) {
                     while ( m_outstanding ) wait(yield);
                 }
 
@@ -229,7 +229,7 @@ namespace f5 {
                 friend class job;
 
                 /// Add another outstanding job and return it
-                std::unique_ptr<job> next_job(boost::asio::yield_context &yield) {
+                std::unique_ptr<job> next_job(boost::asio::yield_context yield) {
                     while ( true ) {
                         const auto limit = m_limit.load();
                         if ( not limit || m_outstanding.load() < limit ) break;
