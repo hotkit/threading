@@ -1,3 +1,13 @@
+2017-05-19  Kirit Saelensminde  <kirit@felspar.com>
+ * Don't include any Fost headers.
+ * Bypass the coroutine unwind exceptions in for the reactor and sync.
+
+2017-05-15  Kirit Saelensminde  <kirit@felspar.com>
+ Move the `reactor_pool` to `reactor.hpp`
+
+2017-04-25  Kirit Saelensminde  <kirit@felspar.com>
+ The `reactor_pool` can be closed and its threads joined at any time.
+
 2016-12-17  Kirit Saelensminde  <kirit@felspar.com>
  Allow for fetching of the Boost.ASIO work pool thread count.
 

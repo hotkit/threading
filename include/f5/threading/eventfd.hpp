@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2016, Felspar Co Ltd. http://www.kirit.com/f5
+    Copyright 2015-2018, Felspar Co Ltd. http://www.kirit.com/f5
     Distributed under the Boost Software License, Version 1.0.
     See accompanying file LICENSE_1_0.txt or copy at
         http://www.boost.org/LICENSE_1_0.txt
@@ -9,11 +9,10 @@
 #pragma once
 
 
-#include <fost/core>
-
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
 
+#include <atomic>
 #include <system_error>
 
 
@@ -39,8 +38,8 @@ namespace f5 {
                     auto fd = ::eventfd(initval, flags);
                     if ( fd < 0 ) {
                         std::error_code error(errno, std::system_category());
-                        throw fostlib::exceptions::null(
-                            "Bad eventfd file descriptor", error.message().c_str());
+                        throw std::runtime_error(
+                            std::string("Bad eventfd file descriptor: ") + error.message());
                     }
                     return fd;
                 }
@@ -69,13 +68,18 @@ namespace f5 {
 
                 /// Read the current value from the file descriptor. Yields
                 /// until it is available.
-                int64_t read(boost::asio::yield_context &yield) {
+                int64_t async_read(boost::asio::yield_context yield) {
                     uint64_t count = 0;
                     boost::asio::streambuf buffer;
                     boost::asio::async_read(descriptor, buffer,
                         boost::asio::transfer_exactly(sizeof(count)), yield);
                     buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
                     return count;
+                }
+
+                /// Close the file descriptor
+                void close() {
+                    descriptor.close();
                 }
             };
 
@@ -111,8 +115,13 @@ namespace f5 {
                 }
                 /// Return how much to consume. Yields until there is
                 /// something available.
-                uint64_t consume(boost::asio::yield_context &yield) {
-                    return fd.read(yield);
+                uint64_t consume(boost::asio::yield_context yield) {
+                    return fd.async_read(yield);
+                }
+
+                /// Close the throttle
+                void close() {
+                    fd.close();
                 }
             };
 
@@ -125,38 +134,34 @@ namespace f5 {
             class limiter {
                 /// The IO service
                 boost::asio::io_service &service;
-                /// The yield context that we can use
-                boost::asio::yield_context &yield;
                 /// The file descriptor
                 eventfd::fd fd;
                 /// The limit before we block waiting for some of the work
                 /// to complete.
-                const uint64_t m_limit;
+                std::atomic<uint64_t> m_limit;
                 /// The amount of outstanding work
-                uint64_t m_outstanding;
+                std::atomic<uint64_t> m_outstanding;
 
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
-                uint64_t wait(boost::asio::yield_context &yield) {
-                    const uint64_t count = fd.read(yield);
-                    assert(count <= m_outstanding);
+                uint64_t wait(boost::asio::yield_context yield) {
+                    const uint64_t count = fd.async_read(yield);
                     m_outstanding -= count;
                     return count;
                 }
             public:
                 /// Construct with a given limit
                 limiter(
-                    boost::asio::io_service &ios, boost::asio::yield_context &y, uint64_t limit
-                ) : service(ios), yield(y),
+                    boost::asio::io_service &ios, uint64_t limit
+                ) : service(ios),
                     fd(ios),
                     m_limit(limit),
                     m_outstanding{}
                 {}
                 /// The destructor ensures that there is no outstanding work
                 /// before it completes
-                ~limiter() {
-                    while ( m_outstanding )
-                        wait(yield);
+                void wait_for_all_outstanding(boost::asio::yield_context yield) {
+                    while ( m_outstanding ) wait(yield);
                 }
 
                 /// Return the IO service
@@ -164,13 +169,21 @@ namespace f5 {
                     return service;
                 }
 
-                /// The number of outstanding jobs
+                /// Increase the limit
+                uint64_t increase_limit(uint64_t l) {
+                    return m_limit += l;
+                }
+                /// Decrease the limit
+                uint64_t decrease_limit(uint64_t l) {
+                    return m_limit -= l;
+                }
+                /// The maximum number of outstanding jobs
                 uint64_t limit() const {
-                    return m_limit;
+                    return m_limit.load();
                 }
                 /// The current number of outstanding jobs
                 uint64_t outstanding() const {
-                    return m_outstanding;
+                    return m_outstanding.load();
                 }
 
                 /// A proxy for an outstanding job
@@ -216,11 +229,19 @@ namespace f5 {
                 friend class job;
 
                 /// Add another outstanding job and return it
-                std::shared_ptr<job> operator ++ () {
-                    while ( m_limit && m_outstanding >= m_limit )
+                std::unique_ptr<job> next_job(boost::asio::yield_context yield) {
+                    while ( true ) {
+                        const auto limit = m_limit.load();
+                        if ( not limit || m_outstanding.load() < limit ) break;
                         wait(yield);
+                    }
                     ++m_outstanding;
-                    return std::shared_ptr<job>(new job(*this));
+                    return std::unique_ptr<job>(new job(*this));
+                }
+
+                /// Close it
+                void close() {
+                    fd.close();
                 }
             };
 
