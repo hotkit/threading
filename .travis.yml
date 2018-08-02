@@ -20,10 +20,11 @@ script:
     - git clone -b boost-1.63.0 https://github.com/boostorg/date_time.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/predef.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/smart_ptr.git
+    - git clone -b boost-1.63.0 https://github.com/boostorg/static_assert.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/system.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/throw_exception.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/utility.git
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/date_time/include -I$(pwd)/predef/include -I$(pwd)/smart_ptr/include -I$(pwd)/system/include -I$(pwd)/throw_exception/include -I$(pwd)/utility/include"
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/date_time/include -I$(pwd)/predef/include -I$(pwd)/smart_ptr/include -I$(pwd)/static_assert/include -I$(pwd)/system/include -I$(pwd)/throw_exception/include -I$(pwd)/utility/include"
     - make
     - make check
 
