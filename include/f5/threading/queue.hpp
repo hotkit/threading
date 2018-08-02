@@ -1,5 +1,5 @@
 /**
-    Copyright 2017-2018, Felspar Co Ltd. <http://www.kirit.com/f5>
+    Copyright 2017-2018, Felspar Co Ltd. <https://www.kirit.com/f5>
 
     Distributed under the Boost Software License, Version 1.0.
     See <http://www.boost.org/LICENSE_1_0.txt>
@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include <f5/threading/eventfd.hpp>
+#include <f5/threading/limiters.hpp>
 
 #include <deque>
 #include <experimental/optional>

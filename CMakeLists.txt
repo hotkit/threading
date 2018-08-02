@@ -10,4 +10,6 @@ else()
     target_compile_features(f5-threading INTERFACE cxx_std_17)
 endif()
 
+
 enable_testing()
+add_subdirectory(test)
