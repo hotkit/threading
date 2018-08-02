@@ -19,7 +19,8 @@ script:
     - git clone -b boost-1.63.0 https://github.com/boostorg/core.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/predef.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/system.git
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/predef/include -I$(pwd)/system/include"
+    - git clone -b boost-1.63.0 https://github.com/boostorg/throw_exception.git
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/predef/include -I$(pwd)/system/include -I$(pwd)/throw_exception/include"
     - make
     - make check
 
