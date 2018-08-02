@@ -29,7 +29,7 @@ namespace f5 {
             /// a drop in replacement for the underlying Boost
             /// stream_descriptor, but ensures that the file descriptor
             /// is properly established.
-            class fd {
+            class [[deprecated("Use the f5::threading::fd::pipe instead")]] fd {
                 boost::asio::posix::stream_descriptor descriptor;
 
             public:
@@ -84,6 +84,42 @@ namespace f5 {
             };
 
 
+        }
+
+
+        namespace fd {
+
+
+            /// An internal pipe. Data may be written and read from it. There is
+            /// no explicit data framing--it is assumed that the user will perform
+            /// any that is needed.
+            class pipe {
+                boost::asio::posix::stream_descriptor read, write;
+            public:
+                pipe(boost::asio::io_service &ios)
+                : read(ios), write(ios) {
+                }
+
+                /// Forward call to embedded descriptor
+                template<typename... U>
+                auto async_read_some(U&&... u) {
+                    return read.async_read_some(std::forward<U>(u)...);
+                }
+
+                /// Forward call to embedded descriptor
+                template<typename... U>
+                auto async_write_some(U&&... u) {
+                    return write.async_write_some(std::forward<U>(u)...);
+                }
+
+                /// Close both ends of the pipe
+                void close() {
+                    read.close();
+                    write.close();
+                }
+            };
+
+
             /// Allow for an unlimited produer/consumer which never
             /// blocks due to the producer trying to send through too
             /// much work.
@@ -91,13 +127,13 @@ namespace f5 {
                 /// The IO service
                 boost::asio::io_service &service;
                 /// The file descriptor
-                eventfd::fd fd;
+                pipe pp;
 
             public:
                 /// Constructs the producer/consumer channel
                 unlimited(
                     boost::asio::io_service &ios
-                ) : service(ios), fd(ios) {
+                ) : service(ios), pp(ios) {
                 }
 
                 /// Return the IO service
@@ -108,20 +144,30 @@ namespace f5 {
                 /// Send the amount of work produced to the consumer
                 /// side.
                 void produced(uint64_t count = 1) {
-                    boost::asio::async_write(fd,
-                        boost::asio::buffer(&count, sizeof(count)),
-                        [](auto error, auto bytes) {
-                        });
+                    while ( count ) {
+                        unsigned char c = std::min(count, uint64_t{255});
+                        count -= c;
+                        boost::asio::async_write(pp,
+                            boost::asio::buffer(&c, 1),
+                            [](auto error, auto bytes) {
+                                throw std::system_error(error, std::string("Bytes ") + std::to_string(bytes));
+                            });
+                    }
                 }
                 /// Return how much to consume. Yields until there is
                 /// something available.
                 uint64_t consume(boost::asio::yield_context yield) {
-                    return fd.async_read(yield);
+                    unsigned char c{};
+                    while ( not c ) {
+                        boost::asio::async_read(pp, boost::asio::buffer(&c, 1),
+                            boost::asio::transfer_exactly(1), yield);
+                    }
+                    return c;
                 }
 
                 /// Close the throttle
                 void close() {
-                    fd.close();
+                    pp.close();
                 }
             };
 
@@ -135,7 +181,7 @@ namespace f5 {
                 /// The IO service
                 boost::asio::io_service &service;
                 /// The file descriptor
-                eventfd::fd fd;
+                pipe pp;
                 /// The limit before we block waiting for some of the work
                 /// to complete.
                 std::atomic<uint64_t> m_limit;
@@ -145,16 +191,19 @@ namespace f5 {
                 /// Wait until at least one job has completed. Returns
                 /// the number of jobs that have completed.
                 uint64_t wait(boost::asio::yield_context yield) {
-                    const uint64_t count = fd.async_read(yield);
-                    m_outstanding -= count;
-                    return count;
+                    unsigned char c{};
+                    while ( not c ) {
+                        boost::asio::async_read(pp, boost::asio::buffer(&c, 1),
+                            boost::asio::transfer_exactly(1), yield);
+                    }
+                    m_outstanding -= c;
+                    return c;
                 }
             public:
                 /// Construct with a given limit
-                limiter(
-                    boost::asio::io_service &ios, uint64_t limit
-                ) : service(ios),
-                    fd(ios),
+                limiter(boost::asio::io_service &ios, uint64_t limit)
+                : service(ios),
+                    pp(ios),
                     m_limit(limit),
                     m_outstanding{}
                 {}
@@ -216,8 +265,8 @@ namespace f5 {
                     void done(E efn) {
                         if ( !completed ) {
                             completed = true;
-                            uint64_t count = 1;
-                            boost::asio::async_write(limit.fd,
+                            unsigned char count = 1;
+                            boost::asio::async_write(limit.pp,
                                 boost::asio::buffer(&count, sizeof(count)),
                                 [efn](auto error, auto bytes) {
                                     if ( error || bytes != sizeof(uint64_t) )
@@ -241,11 +290,17 @@ namespace f5 {
 
                 /// Close it
                 void close() {
-                    fd.close();
+                    pp.close();
                 }
             };
 
 
+        }
+
+
+        namespace eventfd {
+            using unlimited [[deprecated("Use f5::fd::unlimited")]] = f5::threading::fd::unlimited;
+            using limiter [[deprecated("Use f5::fd::limiter")]] = f5::threading::fd::limiter;
         }
 
 

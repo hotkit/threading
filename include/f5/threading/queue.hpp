@@ -35,7 +35,7 @@ namespace f5 {
             S items;
             /// Communication between producer and consumer about how
             /// many items are in the channel
-            threading::eventfd::unlimited signal;
+            threading::fd::unlimited signal;
             /// Return and pop the head of the deque. There must already
             /// be a lock covering the deque
             T pop_head() {
