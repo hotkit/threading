@@ -12,7 +12,7 @@ env:
     - CMAKE_BUILD_TYPE=Release
 
 script:
-    - apt install -y -qq boost-dev-all
+    - sudo apt install -y -qq boost-dev-all
     - mkdir build.tmp && cd build.tmp
     - cmake ..
     - make
