@@ -13,7 +13,7 @@ env:
 
 script:
     - mkdir build.tmp && cd build.tmp
-    - git clone -b boost-1.63.0 git@github.com:boostorg/asio.git
+    - git clone -b boost-1.63.0 https://github.com/boostorg/asio.git
     - cmake .. -DCMAKE_CXX_FLAGS=-Iasio/include
     - make
     - make check
