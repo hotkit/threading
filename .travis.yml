@@ -13,9 +13,10 @@ env:
 
 script:
     - mkdir build.tmp && cd build.tmp
-    - git clone -b boost-1.63.0 https://github.com/boostorg/config.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/asio.git
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/config/include -I$(pwd)/asio/include"
+    - git clone -b boost-1.63.0 https://github.com/boostorg/config.git
+    - git clone -b boost-1.63.0 https://github.com/boostorg/system.git
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/config/include -I$(pwd)/system/include"
     - make
     - make check
 
