@@ -22,7 +22,8 @@ script:
     - git clone -b boost-1.63.0 https://github.com/boostorg/smart_ptr.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/system.git
     - git clone -b boost-1.63.0 https://github.com/boostorg/throw_exception.git
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/date_time/include -I$(pwd)/predef/include -I$(pwd)/smart_ptr/include -I$(pwd)/system/include -I$(pwd)/throw_exception/include"
+    - git clone -b boost-1.63.0 https://github.com/boostorg/utility.git
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/asio/include -I$(pwd)/assert/include -I$(pwd)/config/include -I$(pwd)/core/include -I$(pwd)/date_time/include -I$(pwd)/predef/include -I$(pwd)/smart_ptr/include -I$(pwd)/system/include -I$(pwd)/throw_exception/include -I$(pwd)/utility/include"
     - make
     - make check
 
