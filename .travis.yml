@@ -1,6 +1,6 @@
 language: cpp
 sudo: required
-dist: artful
+dist: xenial
 
 compiler:
     - gcc
@@ -12,9 +12,9 @@ env:
     - CMAKE_BUILD_TYPE=Release
 
 script:
-    - sudo apt install -y -qq libboost-all-dev
     - mkdir build.tmp && cd build.tmp
-    - cmake ..
+    - git clone -b boost-1.63.0 git@github.com:boostorg/asio.git
+    - cmake .. -DCMAKE_CXX_FLAGS=-Iasio/include
     - make
     - make check
 
