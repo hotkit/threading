@@ -8,4 +8,6 @@
 
 #pragma once
 
-#error Use f5/threading/limiters.hpp instead of eventfd.hpp
+#warning Use f5/threading/limiters.hpp instead of eventfd.hpp
+#include <f5/threading/limiters.hpp>
+
