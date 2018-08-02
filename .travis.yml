@@ -1,5 +1,6 @@
 language: cpp
-dist: bionic
+sudo: required
+dist: xenial
 
 compiler:
     - gcc
@@ -11,6 +12,7 @@ env:
     - CMAKE_BUILD_TYPE=Release
 
 script:
+    - apt install -y -qq boost-dev-all
     - mkdir build.tmp && cd build.tmp
     - cmake ..
     - make
