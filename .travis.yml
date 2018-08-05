@@ -15,6 +15,6 @@ script:
     - mkdir build.tmp && cd build.tmp
     - git clone https://github.com/KayEss/fost-boost.git
     - cd fost-boost && cmake . && cd ..
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_62_0/$CC/$(echo CMAKE_BUILD_TYPE | sed s/Debug/debug/ | sed s/Release/release/)/"
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_62_0/$CC/$(echo $CMAKE_BUILD_TYPE | s/Debug/debug/ | sed s/Release/release/)/"
     - make
     - make check
