@@ -21,5 +21,5 @@ script:
     - ln -s ../../boost-cache fost-boost/boost
     - cd fost-boost && cmake . && cd ..
     - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$(echo $CMAKE_BUILD_TYPE | sed s/Debug/debug/ | sed s/Release/release/)/"
-    - make --debug=j
-    - make --debug=j check
+    - make VERBOSE=1
+    - make VERBOSE=1 check
