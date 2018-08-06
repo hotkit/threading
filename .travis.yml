@@ -20,6 +20,6 @@ script:
     - git clone https://github.com/KayEss/fost-boost.git
     - ln -s ../../boost-cache fost-boost/boost && ls fost-boost/boost/1_66_0/ fost-boost/boost/1_66_0/$CC/  fost-boost/boost/1_66_0/$CC/$VARIANT/
     - cd fost-boost && cmake . && cd ..
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/"
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/"
     - make VERBOSE=1
     - make VERBOSE=1 check
