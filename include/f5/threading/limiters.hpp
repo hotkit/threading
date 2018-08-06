@@ -15,6 +15,8 @@
 #include <atomic>
 #include <system_error>
 
+#include <unistd.h>
+
 
 namespace f5 {
 
@@ -98,6 +100,11 @@ namespace f5 {
             public:
                 pipe(boost::asio::io_service &ios)
                 : read(ios), write(ios) {
+                    std::array<int, 2> p{{0, 0}};
+                    if ( ::pipe(p.data()) < 0 )
+                        throw std::system_error(errno, std::system_category());
+                    read.assign(p[0]);
+                    write.assign(p[1]);
                 }
 
                 /// Forward call to embedded descriptor
