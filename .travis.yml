@@ -19,6 +19,12 @@ script:
     - git clone https://github.com/KayEss/fost-boost.git
     - ln -s ../../boost-cache fost-boost/boost
     - cd fost-boost && cmake . -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE && cd ..
-    - cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/" -DCMAKE_EXE_LINKER_FLAGS="-Wl,-L$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/,-rpath,$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/ -v"
+    - cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/" -DCMAKE_EXE_LINKER_FLAGS="-Wl,-L$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/,-rpath,$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/"
     - make VERBOSE=1
     - make VERBOSE=1 check
+
+
+matrix:
+    allow_failures:
+        - compiler: clang
+
