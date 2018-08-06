@@ -17,8 +17,8 @@ cache:
 script:
     - mkdir build.tmp && cd build.tmp
     - git clone https://github.com/KayEss/fost-boost.git
-    - ln -s ../../boost-cache fost-boost/boost && ls fost-boost/boost/1_66_0/ fost-boost/boost/1_66_0/$CC/  fost-boost/boost/1_66_0/$CC/$VARIANT/
+    - ln -s ../../boost-cache fost-boost/boost
     - cd fost-boost && cmake . && cd ..
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/ -L$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/" -DCMAKE_EXE_LINKER_FLAGS=" -rpath $(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/"
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/ -L$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/" -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/"
     - make VERBOSE=1
     - make VERBOSE=1 check
