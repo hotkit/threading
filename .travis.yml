@@ -18,7 +18,7 @@ cache:
 script:
     - mkdir build.tmp && cd build.tmp
     - git clone https://github.com/KayEss/fost-boost.git
-    - ln -s ../../boost-cache fost-boost/boost
+    - ln -s ../../boost-cache fost-boost/boost && ls fost-boost/boost
     - cd fost-boost && cmake . && cd ..
     - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$(echo $CMAKE_BUILD_TYPE | sed s/Debug/debug/ | sed s/Release/release/)/"
     - make VERBOSE=1
