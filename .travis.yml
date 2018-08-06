@@ -7,9 +7,9 @@ compiler:
     - clang
 
 env:
-    -
-    - CMAKE_BUILD_TYPE=Debug
-    - CMAKE_BUILD_TYPE=Release
+    - VARIANT=debug
+    - CMAKE_BUILD_TYPE=Debug VARIANT=debug
+    - CMAKE_BUILD_TYPE=Release VARIANT=release
 
 cache:
   directories:
@@ -18,8 +18,8 @@ cache:
 script:
     - mkdir build.tmp && cd build.tmp
     - git clone https://github.com/KayEss/fost-boost.git
-    - ln -s ../../boost-cache fost-boost/boost && ls fost-boost/boost
+    - ln -s ../../boost-cache fost-boost/boost && ls fost-boost/boost/1_66_0/ fost-boost/boost/1_66_0/$CC/  fost-boost/boost/1_66_0/$CC/$VARIANT/
     - cd fost-boost && cmake . && cd ..
-    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$(echo $CMAKE_BUILD_TYPE | sed s/Debug/debug/ | sed s/Release/release/)/"
+    - cmake .. -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/"
     - make VERBOSE=1
     - make VERBOSE=1 check
