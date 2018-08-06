@@ -157,7 +157,9 @@ namespace f5 {
                         boost::asio::async_write(pp,
                             boost::asio::buffer(&c, 1),
                             [](auto error, auto bytes) {
-                                throw std::system_error(error, std::string("Bytes ") + std::to_string(bytes));
+                                if ( error ) {
+                                    throw std::system_error(error, std::string("Bytes ") + std::to_string(bytes));
+                                }
                             });
                     }
                 }
