@@ -18,8 +18,11 @@ int main() {
     }
     ios.run();
 
-    std::cout << "Produced 100, consumed " << consumed << std::endl;
-
-    return consumed == 100u ? 0 : 1;
+    if ( consumed != 100u ) {
+        std::cout << "Produced 100, consumed " << consumed << std::endl;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
