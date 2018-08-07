@@ -1,3 +1,7 @@
+2017-08-02  Kirit Saelensminde  <kirit@felspar.com>
+ * Replace the use of `eventfd` with a pipe.
+ * Remove the deprecated `f5/threading/boost-asio.hpp` header.
+
 2017-05-19  Kirit Saelensminde  <kirit@felspar.com>
  * Don't include any Fost headers.
  * Bypass the coroutine unwind exceptions in for the reactor and sync.
