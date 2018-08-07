@@ -14,4 +14,5 @@ function(runtest name)
     add_test(NAME threading-run-test-${name}-test COMMAND threading-run-test-${name})
 endfunction(runtest)
 
-runtest(limiters-unlimited)
+runtest(limiters-unlimited-blocking)
+runtest(limiters-unlimited-nonblocking)
