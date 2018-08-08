@@ -158,7 +158,9 @@ namespace f5 {
                             boost::asio::buffer(&c, 1),
                             [](auto error, auto bytes) {
                                 if ( error ) {
-                                    throw std::system_error(error, std::string("Bytes ") + std::to_string(bytes));
+                                    throw std::system_error(
+                                        error.value(), std::generic_category(),
+                                        std::string("Bytes ") + std::to_string(bytes));
                                 }
                             });
                     }
