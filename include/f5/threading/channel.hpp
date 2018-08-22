@@ -1,8 +1,8 @@
-/*
-    Copyright 2017, Felspar Co Ltd. http://www.kirit.com/f5
+/**
+    Copyright 2017-2018, Felspar Co Ltd. <https://www.kirit.com/f5>
+
     Distributed under the Boost Software License, Version 1.0.
-    See accompanying file LICENSE_1_0.txt or copy at
-        http://www.boost.org/LICENSE_1_0.txt
+    See <http://www.boost.org/LICENSE_1_0.txt>
 */
 
 
@@ -25,7 +25,7 @@ namespace f5 {
         /// similar construct which accepts unlimited items see queue.
         template<typename V>
         class channel {
-            using queue_job = std::pair<std::unique_ptr<eventfd::limiter::job>, V>;
+            using queue_job = std::pair<std::unique_ptr<fd::limiter::job>, V>;
             using queue_type = queue<queue_job, boost::circular_buffer<queue_job>>;
             queue_type buffer;
             eventfd::limiter throttle;
