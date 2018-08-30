@@ -1,3 +1,6 @@
+2018-08-30  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a horribly broken search API in `tsmap`.
+
 2017-08-02  Kirit Saelensminde  <kirit@felspar.com>
  * Replace the use of `eventfd` with a pipe.
  * Remove the deprecated `f5/threading/boost-asio.hpp` header.

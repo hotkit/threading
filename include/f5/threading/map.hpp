@@ -1,8 +1,8 @@
-/*
-    Copyright 2015-2016, Felspar Co Ltd. http://www.kirit.com/f5
+/**
+    Copyright 2015-2018, Felspar Co Ltd. <https://www.kirit.com/f5>
+
     Distributed under the Boost Software License, Version 1.0.
-    See accompanying file LICENSE_1_0.txt or copy at
-        http://www.boost.org/LICENSE_1_0.txt
+    See <http://www.boost.org/LICENSE_1_0.txt>
 */
 
 
@@ -58,14 +58,23 @@ namespace f5 {
             /// Return a pointer to the value if found. If not found then
             /// return nullptr
             template<typename L>
-            typename traits::found_type find(const L &k, const V &s = V()) const {
+            typename traits::found_type find(const L &k) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound == map.end() || k != bound->first ) {
-                    return traits::found_from_V(s);
+                    return nullptr;
                 } else {
                     return traits::found_from_V(bound->second);
                 }
+            }
+            /// Return a pointer to either the item in the map, or the
+            /// passed in default.
+            template<typename L>
+            typename traits::found_type find(
+                const L &k, typename traits::found_type d
+            ) const {
+                if ( auto p = find(k); p ) return p;
+                else return d;
             }
 
             /// Ensures the item at the requested key is the value given
