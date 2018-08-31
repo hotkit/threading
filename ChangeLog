@@ -1,3 +1,6 @@
+2018-08-31  Kirit Saelensminde  <kirit@felspar.com>
+ Small improvement to API for moving things into a `tsmap`.
+
 2018-08-30  Kirit Saelensminde  <kirit@felspar.com>
  Fix a horribly broken search API in `tsmap`.
 
