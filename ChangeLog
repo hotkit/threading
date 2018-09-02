@@ -1,3 +1,6 @@
+2018-09-02  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a bug in `tsmap::insert_or_assign` which caused it to return the wrong value.
+
 2018-08-31  Kirit Saelensminde  <kirit@felspar.com>
  Small improvement to API for moving things into a `tsmap`.
 

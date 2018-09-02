@@ -56,7 +56,7 @@ namespace f5 {
             }
 
             /// Return a pointer to the value if found. If not found then
-            /// return nullptr
+            /// return `nullptr`
             template<typename L>
             typename traits::found_type find(const L &k) const {
                 std::unique_lock<std::mutex> lock(mutex);
@@ -89,10 +89,10 @@ namespace f5 {
                     return traits::value_from_V(bound->second = std::move(a));
                 } else {
                     // We have a cache miss so insert
-                    map.emplace(bound, std::piecewise_construct,
-                        std::forward_as_tuple(k),
-                        std::forward_as_tuple(std::move(a)));
-                    return traits::value_from_V(map.back().second);
+                    return traits::value_from_V(
+                        map.emplace(bound, std::piecewise_construct,
+                            std::forward_as_tuple(k),
+                            std::forward_as_tuple(std::move(a)))->second);
                 }
             }
             /// Adds the item if the key is not found. If the key is found and
