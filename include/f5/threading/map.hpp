@@ -200,6 +200,14 @@ namespace f5 {
                     }), map.end());
                 return map.size();
             }
+
+            /// Remove all entries for the map
+            std::size_t clear() {
+                std::unique_lock<std::mutex> lock(mutex);
+                const auto r = map.size();
+                map.clear();
+                return r;
+            }
         };
 
 

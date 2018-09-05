@@ -33,7 +33,7 @@ namespace f5 {
         template<typename V>
         struct pointer_dereference_policy {
             using found_type = decltype(&*V());
-            using value_return_type = decltype(*V());
+            using value_return_type = decltype(*V()) &;
 
             static found_type found_from_V(const V &v) {
                 return &*v;
