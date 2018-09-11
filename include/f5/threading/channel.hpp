@@ -28,7 +28,7 @@ namespace f5 {
             using queue_job = std::pair<std::unique_ptr<fd::limiter::job>, V>;
             using queue_type = queue<queue_job, boost::circular_buffer<queue_job>>;
             queue_type buffer;
-            eventfd::limiter throttle;
+            fd::limiter throttle;
 
         public:
             /// Construct a new channel with the specified capacity
