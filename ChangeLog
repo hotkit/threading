@@ -1,3 +1,6 @@
+2018-09-27  Kirit Saelensminde  <kirit@felspar.com>
+ Remove the old deprecated `eventfd` based code.
+
 2018-09-05  Kirit Saelensminde  <kirit@felspar.com>
  Add `clear` member to `tsmap` and improve the return type for `unique_ptr`.
 
