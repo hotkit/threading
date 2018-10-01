@@ -9,6 +9,7 @@
 #pragma once
 
 
+#include <algorithm>
 #include <mutex>
 #include <vector>
 
@@ -138,7 +139,7 @@ namespace f5 {
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the newly constructed item. If
-            /// the item is arleady in the map then the second lambda is
+            /// the item is already in the map then the second lambda is
             /// executed.
             template<typename F, typename M>
             typename traits::value_return_type add_if_not_found(
