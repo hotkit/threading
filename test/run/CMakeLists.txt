@@ -17,3 +17,4 @@ endfunction(runtest)
 
 runtest(limiters-unlimited-blocking)
 runtest(limiters-unlimited-nonblocking)
+runtest(tsmap-unique_ptr)

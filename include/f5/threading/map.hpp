@@ -135,7 +135,7 @@ namespace f5 {
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
-                        std::forward_as_tuple(args...))->second);
+                        std::forward_as_tuple(std::forward<Args>(args)...))->second);
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the newly constructed item. If
