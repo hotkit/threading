@@ -1,6 +1,5 @@
 add_library(threading-headers-tests STATIC EXCLUDE_FROM_ALL
         channel.cpp
-        eventfd.cpp
         limiters.cpp
         map.cpp
         policy.cpp
