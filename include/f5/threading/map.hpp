@@ -1,14 +1,15 @@
-/*
-    Copyright 2015-2016, Felspar Co Ltd. http://www.kirit.com/f5
+/**
+    Copyright 2015-2018, Felspar Co Ltd. <https://www.kirit.com/f5>
+
     Distributed under the Boost Software License, Version 1.0.
-    See accompanying file LICENSE_1_0.txt or copy at
-        http://www.boost.org/LICENSE_1_0.txt
+    See <http://www.boost.org/LICENSE_1_0.txt>
 */
 
 
 #pragma once
 
 
+#include <algorithm>
 #include <mutex>
 #include <vector>
 
@@ -56,34 +57,43 @@ namespace f5 {
             }
 
             /// Return a pointer to the value if found. If not found then
-            /// return nullptr
+            /// return `nullptr`
             template<typename L>
-            typename traits::found_type find(const L &k, const V &s = V()) const {
+            typename traits::found_type find(const L &k) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound == map.end() || k != bound->first ) {
-                    return traits::found_from_V(s);
+                    return nullptr;
                 } else {
                     return traits::found_from_V(bound->second);
                 }
+            }
+            /// Return a pointer to either the item in the map, or the
+            /// passed in default.
+            template<typename L>
+            typename traits::found_type find(
+                const L &k, typename traits::found_type d
+            ) const {
+                if ( auto p = find(k); p ) return p;
+                else return d;
             }
 
             /// Ensures the item at the requested key is the value given
             template<typename A>
             typename traits::value_return_type insert_or_assign(
-                const K &k, const A &a
+                const K &k, A a
             ) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
                 if ( bound != map.end() && bound->first == k ) {
                     // We have a cache hit, so assign
-                    return traits::value_from_V(bound->second = a);
+                    return traits::value_from_V(bound->second = std::move(a));
                 } else {
                     // We have a cache miss so insert
-                    map.emplace(bound, std::piecewise_construct,
-                        std::forward_as_tuple(k),
-                        std::forward_as_tuple(a));
-                    return traits::value_from_V(map.back().second);
+                    return traits::value_from_V(
+                        map.emplace(bound, std::piecewise_construct,
+                            std::forward_as_tuple(k),
+                            std::forward_as_tuple(std::move(a)))->second);
                 }
             }
             /// Adds the item if the key is not found. If the key is found and
@@ -125,11 +135,11 @@ namespace f5 {
                 return traits::value_from_V(
                     map.emplace(bound, std::piecewise_construct,
                         std::forward_as_tuple(k),
-                        std::forward_as_tuple(args...))->second);
+                        std::forward_as_tuple(std::forward<Args>(args)...))->second);
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the newly constructed item. If
-            /// the item is arleady in the map then the second lambda is
+            /// the item is already in the map then the second lambda is
             /// executed.
             template<typename F, typename M>
             typename traits::value_return_type add_if_not_found(
@@ -190,6 +200,14 @@ namespace f5 {
                         return predicate(v.first, v.second);
                     }), map.end());
                 return map.size();
+            }
+
+            /// Remove all entries for the map
+            std::size_t clear() {
+                std::unique_lock<std::mutex> lock(mutex);
+                const auto r = map.size();
+                map.clear();
+                return r;
             }
         };
 

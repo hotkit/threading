@@ -1,3 +1,18 @@
+2018-09-27  Kirit Saelensminde  <kirit@felspar.com>
+ Remove the old deprecated `eventfd` based code.
+
+2018-09-05  Kirit Saelensminde  <kirit@felspar.com>
+ Add `clear` member to `tsmap` and improve the return type for `unique_ptr`.
+
+2018-09-02  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a bug in `tsmap::insert_or_assign` which caused it to return the wrong value.
+
+2018-08-31  Kirit Saelensminde  <kirit@felspar.com>
+ Small improvement to API for moving things into a `tsmap`.
+
+2018-08-30  Kirit Saelensminde  <kirit@felspar.com>
+ Fix a horribly broken search API in `tsmap`.
+
 2017-08-02  Kirit Saelensminde  <kirit@felspar.com>
  * Replace the use of `eventfd` with a pipe.
  * Remove the deprecated `f5/threading/boost-asio.hpp` header.

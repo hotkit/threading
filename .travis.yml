@@ -7,24 +7,25 @@ compiler:
     - clang
 
 env:
-    - CMAKE_BUILD_TYPE=Debug VARIANT=debug
-    - CMAKE_BUILD_TYPE=Release VARIANT=release
+    - CMAKE_BUILD_TYPE=Debug
+    - CMAKE_BUILD_TYPE=Release
 
 cache:
   directories:
     boost-cache
 
+install:
+    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq -y ninja-build g++-8
+
 script:
     - mkdir build.tmp && cd build.tmp
+    - 'if [ "$CXX" = "g++" ]; then export CC=gcc-8; export CXX=g++-8; fi'
     - git clone https://github.com/KayEss/fost-boost.git
     - ln -s ../../boost-cache fost-boost/boost
-    - cd fost-boost && cmake . -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE && cd ..
-    - cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_CXX_FLAGS="-I$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/include/" -DCMAKE_EXE_LINKER_FLAGS="-Wl,-L$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/,-rpath,$(pwd)/fost-boost/boost/1_66_0/$CC/$VARIANT/lib/"
-    - make VERBOSE=1
-    - make VERBOSE=1 check
-
-
-matrix:
-    allow_failures:
-        - compiler: clang
+    - cp ../.travis.CMakeLists.txt CMakeLists.txt
+    - cmake . -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -G Ninja
+    - ninja
+    - ninja check
 

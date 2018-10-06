@@ -24,71 +24,6 @@ namespace f5 {
     inline namespace threading {
 
 
-        namespace eventfd {
-
-
-            /// Store a Boost ASIO compatible eventfd file descriptor. It is
-            /// a drop in replacement for the underlying Boost
-            /// stream_descriptor, but ensures that the file descriptor
-            /// is properly established.
-            class [[deprecated("Use the f5::threading::fd::pipe instead")]] fd {
-                boost::asio::posix::stream_descriptor descriptor;
-
-            public:
-                /// Get a new file descriptor, or throw an exception
-                static auto create(unsigned int initval = 0, int flags = 0) {
-                    auto fd = ::eventfd(initval, flags);
-                    if ( fd < 0 ) {
-                        std::error_code error(errno, std::system_category());
-                        throw std::runtime_error(
-                            std::string("Bad eventfd file descriptor: ") + error.message());
-                    }
-                    return fd;
-                }
-
-                /// Construct an eventfd with a file descriptor in it
-                fd(boost::asio::io_service &ios)
-                : descriptor(ios, create()) {
-                }
-
-                /// Fetch a reference to the stream_descriptor
-                operator boost::asio::posix::stream_descriptor &() {
-                    return descriptor;
-                }
-
-                /// Forward call to embedded descriptor
-                template<typename... U>
-                auto async_read_some(U&&... u) {
-                    return descriptor.async_read_some(std::forward<U>(u)...);
-                }
-
-                /// Forward call to embedded descriptor
-                template<typename... U>
-                auto async_write_some(U&&... u) {
-                    return descriptor.async_write_some(std::forward<U>(u)...);
-                }
-
-                /// Read the current value from the file descriptor. Yields
-                /// until it is available.
-                int64_t async_read(boost::asio::yield_context yield) {
-                    uint64_t count = 0;
-                    boost::asio::streambuf buffer;
-                    boost::asio::async_read(descriptor, buffer,
-                        boost::asio::transfer_exactly(sizeof(count)), yield);
-                    buffer.sgetn(reinterpret_cast<char *>(&count), sizeof(count));
-                    return count;
-                }
-
-                /// Close the file descriptor
-                void close() {
-                    descriptor.close();
-                }
-            };
-
-
-        }
-
-
         namespace fd {
 
 
@@ -306,12 +241,6 @@ namespace f5 {
             };
 
 
-        }
-
-
-        namespace eventfd {
-            using unlimited [[deprecated("Use f5::fd::unlimited")]] = f5::threading::fd::unlimited;
-            using limiter [[deprecated("Use f5::fd::limiter")]] = f5::threading::fd::limiter;
         }
 
 

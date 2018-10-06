@@ -28,7 +28,7 @@ namespace f5 {
             using queue_job = std::pair<std::unique_ptr<fd::limiter::job>, V>;
             using queue_type = queue<queue_job, boost::circular_buffer<queue_job>>;
             queue_type buffer;
-            eventfd::limiter throttle;
+            fd::limiter throttle;
 
         public:
             /// Construct a new channel with the specified capacity
@@ -47,20 +47,23 @@ namespace f5 {
 
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
-            void produce(V v, boost::asio::yield_context &yield) {
+            template<typename Y>
+            void produce(V v, Y yield) {
                 auto job = throttle.next_job(yield);
                 buffer.produce(std::make_pair(std::move(job), std::move(v)));
             }
 
             /// Yield until a value is available to consume. The space in
             /// the buffer is freed up straight away.
-            V consume(boost::asio::yield_context &yield) {
+            template<typename Y>
+            V consume(Y yield) {
                 return buffer.consume(yield).second;
             }
 
             /// Yield until all of the work that has been produced has been
             /// consumed.
-            void wait_for_all_outstanding(boost::asio::yield_context &yield) {
+            template<typename Y>
+            void wait_for_all_outstanding(Y yield) {
                 throttle.wait_for_all_outstanding(yield);
             }
 
