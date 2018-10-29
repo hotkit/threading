@@ -18,6 +18,17 @@ function(runtest name)
     add_test(NAME threading-run-test-${name}-test COMMAND threading-run-test-${name})
 endfunction(runtest)
 
-runtest(limiters-unlimited-blocking)
-runtest(limiters-unlimited-nonblocking)
+if(NOT (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU"))
+    ## For some reason gcc won't actually run these tests. Until that
+    ## is worked out we don't try to run them as part of the `checks`
+    ## target.
+    ##
+    ## What seems to happen is that these executables link only with
+    ## boost_coroutine and boost_system, but the libraries that they use
+    ## (for example boost.chrono) don't then get loaded as the dynamic
+    ## doesn't seem to know where to find them. Setting `LD_LIBRARY_PATH`
+    ## and then manually running the built binary works.
+    runtest(limiters-unlimited-blocking)
+    runtest(limiters-unlimited-nonblocking)
+endif()
 runtest(tsmap-unique_ptr)
