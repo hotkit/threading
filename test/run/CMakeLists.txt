@@ -4,10 +4,13 @@ function(runtest name)
     add_executable(threading-run-test-${name} EXCLUDE_FROM_ALL ${name}.cpp)
     target_link_libraries(threading-run-test-${name}
         ${CMAKE_THREAD_LIBS_INIT}
+        f5-threading
+        boost
+        boost_chrono
         boost_context
         boost_coroutine
         boost_system
-        f5-threading
+        boost_thread
     )
     add_custom_command(TARGET threading-run-test-${name}
         POST_BUILD COMMAND threading-run-test-${name})
