@@ -3,7 +3,14 @@ project(f5-threading)
 
 add_library(f5-threading INTERFACE)
 target_include_directories(f5-threading INTERFACE include)
-target_link_libraries(f5-threading INTERFACE boost boost_chrono boost_context boost_system boost_thread)
+target_link_libraries(f5-threading INTERFACE
+#         boost
+#         boost_chrono
+#         boost_context
+#         boost_coroutine
+#         boost_system
+#         boost_thread
+    )
 target_compile_definitions(f5-threading INTERFACE BOOST_COROUTINES_NO_DEPRECATION_WARNING)
 target_compile_definitions(f5-threading INTERFACE BOOST_COROUTINE_NO_DEPRECATION_WARNING)
 if(CMAKE_VERSION VERSION_LESS "3.8")
