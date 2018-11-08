@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 
+add_custom_target(check)
+
 add_subdirectory(fost-boost)
 add_subdirectory(.. threading)
 

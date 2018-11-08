@@ -14,9 +14,7 @@ else()
 endif()
 
 
-enable_testing()
-if(NOT TARGET check)
-    add_custom_target(check)
-    set_property(TARGET check PROPERTY EXCLUDE_FROM_ALL TRUE)
+if(TARGET check)
+    enable_testing()
+    add_subdirectory(test)
 endif()
-add_subdirectory(test)
