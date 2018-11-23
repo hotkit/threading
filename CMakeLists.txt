@@ -3,14 +3,7 @@ project(f5-threading)
 
 add_library(f5-threading INTERFACE)
 target_include_directories(f5-threading INTERFACE include)
-target_link_libraries(f5-threading INTERFACE
-#         boost
-#         boost_chrono
-#         boost_context
-#         boost_coroutine
-#         boost_system
-#         boost_thread
-    )
+target_link_libraries(f5-threading INTERFACE)
 target_compile_definitions(f5-threading INTERFACE BOOST_COROUTINES_NO_DEPRECATION_WARNING)
 target_compile_definitions(f5-threading INTERFACE BOOST_COROUTINE_NO_DEPRECATION_WARNING)
 if(CMAKE_VERSION VERSION_LESS "3.8")
@@ -21,9 +14,7 @@ else()
 endif()
 
 
-enable_testing()
-if(NOT TARGET check)
-    add_custom_target(check)
-    set_property(TARGET check PROPERTY EXCLUDE_FROM_ALL TRUE)
+if(TARGET check)
+    enable_testing()
+    add_subdirectory(test)
 endif()
-add_subdirectory(test)
