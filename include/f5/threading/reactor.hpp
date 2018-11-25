@@ -32,13 +32,11 @@ namespace f5 {
             /// until we want them to.
             std::unique_ptr<boost::asio::io_service::work> work;
 
-        public:
+          public:
             /// Default construct a reactor pool with thread count matching
             /// the hardware and that will terminate threads if exceptions
             /// leak
-            reactor_pool()
-            : reactor_pool([](){ return false; }) {
-            }
+            reactor_pool() : reactor_pool([]() { return false; }) {}
 
             /// Construct a pool with the requested thread count and using
             /// the passed in exception handler. The handler returns true
@@ -47,52 +45,45 @@ namespace f5 {
             /// until the pool itself passes out of scope.
             template<typename F>
             explicit reactor_pool(
-                F exception_handler,
-                std::size_t thread_count = std::thread::hardware_concurrency()
-            ) : work(std::make_unique<boost::asio::io_service::work>(ios)) {
-                for ( auto t = 0u; t != thread_count; ++t ) {
-                    threads.emplace_back(
-                        [this, exception_handler]() {
-                            bool again = false;
-                            do {
-                                try {
-                                    again = false;
-                                    ios.run();
-                                } catch ( boost::coroutines::detail::forced_unwind&  ) {
-                                    throw;
-                                } catch ( ... ) {
-                                    again = exception_handler();
-                                }
-                            } while ( again );
-                        });
+                    F exception_handler,
+                    std::size_t thread_count =
+                            std::thread::hardware_concurrency())
+            : work(std::make_unique<boost::asio::io_service::work>(ios)) {
+                for (auto t = 0u; t != thread_count; ++t) {
+                    threads.emplace_back([this, exception_handler]() {
+                        bool again = false;
+                        do {
+                            try {
+                                again = false;
+                                ios.run();
+                            } catch (
+                                    boost::coroutines::detail::forced_unwind &) {
+                                throw;
+                            } catch (...) { again = exception_handler(); }
+                        } while (again);
+                    });
                 }
             }
 
             /// Stop all work and join all threads
             void close() {
-                if ( work ) {
+                if (work) {
                     work.reset();
                     ios.stop();
-                    for ( auto &t : threads ) t.join();
+                    for (auto &t : threads) t.join();
                 }
             }
-            ~reactor_pool() {
-                close();
-            }
+            ~reactor_pool() { close(); }
 
             /// Make non-copyable and non assignable
             reactor_pool(const reactor_pool &) = delete;
-            reactor_pool &operator = (const reactor_pool &) = delete;
+            reactor_pool &operator=(const reactor_pool &) = delete;
 
             /// Return the number of threads servicing the pool
-            std::size_t size() const {
-                return threads.size();
-            }
+            std::size_t size() const { return threads.size(); }
 
             /// Return the contained io_service instance
-            boost::asio::io_service &get_io_service() {
-                return ios;
-            }
+            boost::asio::io_service &get_io_service() { return ios; }
         };
 
 
@@ -100,4 +91,3 @@ namespace f5 {
 
 
 }
-

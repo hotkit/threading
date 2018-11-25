@@ -23,12 +23,8 @@ namespace f5 {
             using found_type = V;
             using value_return_type = V;
 
-            static found_type found_from_V(const V &v) {
-                return v;
-            }
-            static value_return_type value_from_V(V &v) {
-                return v;
-            }
+            static found_type found_from_V(const V &v) { return v; }
+            static value_return_type value_from_V(V &v) { return v; }
         };
 
         /// Policy dereferences the pointer when appropriate
@@ -37,12 +33,8 @@ namespace f5 {
             using found_type = decltype(&*V());
             using value_return_type = decltype(*V()) &;
 
-            static found_type found_from_V(const V &v) {
-                return &*v;
-            }
-            static value_return_type value_from_V(V &v) {
-                return *v;
-            }
+            static found_type found_from_V(const V &v) { return &*v; }
+            static value_return_type value_from_V(V &v) { return *v; }
         };
 
         /// Policy that promotes held weak_ptr instances to their shared_ptr
@@ -52,12 +44,8 @@ namespace f5 {
             using found_type = decltype(V().lock());
             using value_return_type = decltype(V().lock());
 
-            static found_type found_from_V(V v) {
-                return v.lock();
-            }
-            static value_return_type value_from_V(V v) {
-                return v.lock();
-            }
+            static found_type found_from_V(V v) { return v.lock(); }
+            static value_return_type value_from_V(V v) { return v.lock(); }
         };
 
         /// Use the values by default in the container interface
@@ -81,4 +69,3 @@ namespace f5 {
 
 
 }
-

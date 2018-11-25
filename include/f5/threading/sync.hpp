@@ -26,26 +26,25 @@ namespace f5 {
         /// is complete. Effectively just a thin wrapper around a future.
         class sync {
             std::promise<void> blocker;
-        public:
+
+          public:
             void wait() {
                 auto ready = blocker.get_future();
                 ready.get();
             }
 
-            void done() {
-                blocker.set_value();
-            }
+            void done() { blocker.set_value(); }
 
             template<typename F>
-            auto operator () (F op) {
-                return [=](auto &&...s) {
+            auto operator()(F op) {
+                return [=](auto &&... s) {
                     try {
                         op(std::forward<decltype(s)>(s)...);
                         blocker.set_value();
-                    } catch ( boost::coroutines::detail::forced_unwind&  ) {
+                    } catch (boost::coroutines::detail::forced_unwind &) {
                         blocker.set_value();
                         throw;
-                    } catch ( ... ) {
+                    } catch (...) {
                         blocker.set_exception(std::current_exception());
                     }
                 };
@@ -57,4 +56,3 @@ namespace f5 {
 
 
 }
-

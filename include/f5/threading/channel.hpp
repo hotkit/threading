@@ -26,24 +26,23 @@ namespace f5 {
         template<typename V>
         class channel {
             using queue_job = std::pair<std::unique_ptr<fd::limiter::job>, V>;
-            using queue_type = queue<queue_job, boost::circular_buffer<queue_job>>;
+            using queue_type =
+                    queue<queue_job, boost::circular_buffer<queue_job>>;
             queue_type buffer;
             fd::limiter throttle;
 
-        public:
+          public:
             /// Construct a new channel with the specified capacity
             channel(boost::asio::io_service &ios, uint64_t limit)
-            : buffer(ios, typename queue_type::store_type(limit)), throttle(ios, limit) {
-            }
+            : buffer(ios, typename queue_type::store_type(limit)),
+              throttle(ios, limit) {}
 
             /// Return the IO service
             boost::asio::io_service &get_io_service() {
                 return throttle.get_io_service();
             }
             /// Return the capacity of the channel
-            std::size_t size() const {
-                return throttle.limit();
-            }
+            std::size_t size() const { return throttle.limit(); }
 
             /// Add a new item to the buffer. The coroutine yields until
             /// there is space for the item. Returns the remaining capacity
@@ -79,4 +78,3 @@ namespace f5 {
 
 
 }
-
