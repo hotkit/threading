@@ -23,8 +23,10 @@ namespace f5 {
 
 
         /// Thread safe associative array (map) implemented on a std::vector
-        template<typename K, typename V,
-            typename P = typename container_default_policy<V>::type>
+        template<
+                typename K,
+                typename V,
+                typename P = typename container_default_policy<V>::type>
         class tsmap {
             /// Mutex used to control access to the vector
             mutable std::mutex mutex;
@@ -37,19 +39,22 @@ namespace f5 {
             /// Return the lower bound for the key
             template<typename L>
             auto lower_bound(const L &k) const {
-                return std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, const auto &r) {
-                        return l.first < r;
-                    });
+                return std::lower_bound(
+                        map.begin(), map.end(), k,
+                        [](const auto &l, const auto &r) {
+                            return l.first < r;
+                        });
             }
             template<typename L>
             auto lower_bound(const L &k) {
-                return std::lower_bound(map.begin(), map.end(), k,
-                    [](const auto &l, const auto &r) {
-                        return l.first < r;
-                    });
+                return std::lower_bound(
+                        map.begin(), map.end(), k,
+                        [](const auto &l, const auto &r) {
+                            return l.first < r;
+                        });
             }
-        public:
+
+          public:
             /// Return an estimate of the size of the map.
             std::size_t size() {
                 std::unique_lock<std::mutex> lock(mutex);
@@ -62,7 +67,7 @@ namespace f5 {
             typename traits::found_type find(const L &k) const {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound == map.end() || k != bound->first ) {
+                if (bound == map.end() || k != bound->first) {
                     return nullptr;
                 } else {
                     return traits::found_from_V(bound->second);
@@ -71,43 +76,44 @@ namespace f5 {
             /// Return a pointer to either the item in the map, or the
             /// passed in default.
             template<typename L>
-            typename traits::found_type find(
-                const L &k, typename traits::found_type d
-            ) const {
-                if ( auto p = find(k); p ) return p;
-                else return d;
+            typename traits::found_type
+                    find(const L &k, typename traits::found_type d) const {
+                if (auto p = find(k); p)
+                    return p;
+                else
+                    return d;
             }
 
             /// Ensures the item at the requested key is the value given
             template<typename A>
-            typename traits::value_return_type insert_or_assign(
-                const K &k, A a
-            ) {
+            typename traits::value_return_type
+                    insert_or_assign(const K &k, A a) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound != map.end() && bound->first == k ) {
+                if (bound != map.end() && bound->first == k) {
                     // We have a cache hit, so assign
                     return traits::value_from_V(bound->second = std::move(a));
                 } else {
                     // We have a cache miss so insert
                     return traits::value_from_V(
-                        map.emplace(bound, std::piecewise_construct,
-                            std::forward_as_tuple(k),
-                            std::forward_as_tuple(std::move(a)))->second);
+                            map.emplace(
+                                       bound, std::piecewise_construct,
+                                       std::forward_as_tuple(k),
+                                       std::forward_as_tuple(std::move(a)))
+                                    ->second);
                 }
             }
             /// Adds the item if the key is not found. If the key is found and
             /// the predicate returns true then replaces the value with the
             /// one returned by the lambda
             template<typename C, typename F>
-            typename traits::value_return_type insert_or_assign_if(
-                const K &k, C predicate, F lambda
-            ) {
+            typename traits::value_return_type
+                    insert_or_assign_if(const K &k, C predicate, F lambda) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound != map.end() && bound->first == k ) {
+                if (bound != map.end() && bound->first == k) {
                     // Cache hit so check the predicate
-                    if ( predicate(bound->second) ) {
+                    if (predicate(bound->second)) {
                         return traits::value_from_V(bound->second = lambda());
                     } else {
                         return traits::value_from_V(bound->second);
@@ -115,65 +121,68 @@ namespace f5 {
                 }
                 // Cache miss, so use the lambda to get the value to insert
                 return traits::value_from_V(
-                    map.emplace(bound, std::piecewise_construct,
-                        std::forward_as_tuple(k),
-                        std::forward_as_tuple(lambda()))->second);
+                        map.emplace(
+                                   bound, std::piecewise_construct,
+                                   std::forward_as_tuple(k),
+                                   std::forward_as_tuple(lambda()))
+                                ->second);
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the item
             template<typename... Args>
-            typename traits::value_return_type emplace_if_not_found(
-                const K &k, Args&&... args
-            ) {
+            typename traits::value_return_type
+                    emplace_if_not_found(const K &k, Args &&... args) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound != map.end() && bound->first == k ) {
+                if (bound != map.end() && bound->first == k) {
                     // A cache hit, so return what we have
                     return traits::value_from_V(bound->second);
                 }
                 // Insert before returning the new value
                 return traits::value_from_V(
-                    map.emplace(bound, std::piecewise_construct,
-                        std::forward_as_tuple(k),
-                        std::forward_as_tuple(std::forward<Args>(args)...))->second);
+                        map.emplace(
+                                   bound, std::piecewise_construct,
+                                   std::forward_as_tuple(k),
+                                   std::forward_as_tuple(
+                                           std::forward<Args>(args)...))
+                                ->second);
             }
             /// Adds a value at the key if there isn't one there already.
             /// Returns a reference to the newly constructed item. If
             /// the item is already in the map then the second lambda is
             /// executed.
             template<typename F, typename M>
-            typename traits::value_return_type add_if_not_found(
-                const K &k, F lambda, M miss
-            ) {
+            typename traits::value_return_type
+                    add_if_not_found(const K &k, F lambda, M miss) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound != map.end() && bound->first == k ) {
+                if (bound != map.end() && bound->first == k) {
                     // Cache hit so don't run the lambda
                     miss(traits::value_from_V(bound->second));
                     return traits::value_from_V(bound->second);
                 }
                 // Cache miss, so use the lambda to get the value to insert
                 return traits::value_from_V(
-                    map.emplace(bound, std::piecewise_construct,
-                        std::forward_as_tuple(k),
-                        std::forward_as_tuple(lambda()))->second);
+                        map.emplace(
+                                   bound, std::piecewise_construct,
+                                   std::forward_as_tuple(k),
+                                   std::forward_as_tuple(lambda()))
+                                ->second);
             }
             /// Adds a value at the key if there isn't one there already.
             template<typename F>
-            typename traits::value_return_type add_if_not_found(
-                const K &k, F lambda
-            ) {
-                return add_if_not_found(k, lambda, [](const auto &){});
+            typename traits::value_return_type
+                    add_if_not_found(const K &k, F lambda) {
+                return add_if_not_found(k, lambda, [](const auto &) {});
             }
 
             /// Iterate over the content of the map
             template<typename F>
             F for_each(F fn) const {
                 std::unique_lock<std::mutex> lock(mutex);
-                std::for_each(map.begin(), map.end(),
-                    [fn](const auto &v) {
-                        fn(v.first, v.second);
-                    });
+                std::for_each(map.begin(), map.end(), [fn](const auto &v) {
+                    fn(v.first, v.second);
+                });
                 return std::move(fn);
             }
 
@@ -182,7 +191,7 @@ namespace f5 {
             bool remove(const K &k) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(k);
-                if ( bound == map.end() )
+                if (bound == map.end())
                     return false;
                 else {
                     map.erase(bound);
@@ -195,10 +204,13 @@ namespace f5 {
             template<typename Pr>
             std::size_t remove_if(Pr predicate) {
                 std::unique_lock<std::mutex> lock(mutex);
-                map.erase(std::remove_if(map.begin(), map.end(),
-                    [predicate](const auto &v) {
-                        return predicate(v.first, v.second);
-                    }), map.end());
+                map.erase(
+                        std::remove_if(
+                                map.begin(), map.end(),
+                                [predicate](const auto &v) {
+                                    return predicate(v.first, v.second);
+                                }),
+                        map.end());
                 return map.size();
             }
 
@@ -216,4 +228,3 @@ namespace f5 {
 
 
 }
-

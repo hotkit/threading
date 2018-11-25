@@ -25,14 +25,13 @@ namespace f5 {
         class tsring {
             std::mutex mutex;
             boost::circular_buffer<V> ring;
-        public:
-            /// Construct a ring with the specified number of slots available
-            tsring(std::size_t s)
-            : ring(s) {
-            }
 
-            /// Emplace an item on to the end of the buffer. If the buffer is full
-            /// then the first item is overwritten.
+          public:
+            /// Construct a ring with the specified number of slots available
+            tsring(std::size_t s) : ring(s) {}
+
+            /// Emplace an item on to the end of the buffer. If the buffer is
+            /// full then the first item is overwritten.
             ///
             /// Returns the number of free slots in the buffer
             template<typename F>
@@ -41,26 +40,24 @@ namespace f5 {
                 ring.push_back(fn());
                 return ring.capacity() - ring.size();
             }
-            /// Emplace an item on to the back of the buffer. If the buffer is full
-            /// the predicate is run. It can return `true` to indicate that the new
-            /// should be placed anyway.
+            /// Emplace an item on to the back of the buffer. If the buffer is
+            /// full the predicate is run. It can return `true` to indicate that
+            /// the new should be placed anyway.
             ///
             /// Returns the number of free slots in the buffer
             template<typename F, typename P>
             std::size_t push_back(F fn, P pred) {
                 std::unique_lock<std::mutex> lock(mutex);
-                if ( !ring.full() || pred(ring.back()) ) {
-                    ring.push_back(fn());
-                }
+                if (!ring.full() || pred(ring.back())) { ring.push_back(fn()); }
                 return ring.capacity() - ring.size();
             }
 
-            /// Pop the beginning of the buffer and return the value that was there. If the buffer
-            /// is empty then return the value passed in
+            /// Pop the beginning of the buffer and return the value that was
+            /// there. If the buffer is empty then return the value passed in
             template<typename D>
             D pop_front(D d) {
                 std::unique_lock<std::mutex> lock(mutex);
-                if ( ring.empty() ) {
+                if (ring.empty()) {
                     return std::move(d);
                 } else {
                     auto v = std::move(ring[0]);
@@ -75,4 +72,3 @@ namespace f5 {
 
 
 }
-

@@ -43,7 +43,8 @@ namespace f5 {
                 items.pop_front();
                 return ret;
             }
-        public:
+
+          public:
             /// The type of storage used by the queue
             using store_type = S;
             /// The type of item that is put in the queue
@@ -51,8 +52,7 @@ namespace f5 {
 
             /// Construct for the specified IO service
             queue(boost::asio::io_service &ios, S s = S())
-            : items(std::move(s)), signal{ios} {
-            }
+            : items(std::move(s)), signal{ios} {}
 
             /// Produce an item to be consued
             void produce(T t) {
@@ -65,29 +65,25 @@ namespace f5 {
             /// Consume an item, block the coroutine until one becomes
             /// available.
             T consume(boost::asio::yield_context yield) {
-                while ( true ) {
+                while (true) {
                     auto check_size = [this]() {
                         std::unique_lock<std::mutex> lock{exclusive};
                         return items.size();
                     };
-                    while ( not check_size() ) {
-                        signal.consume(yield);
-                    }
+                    while (not check_size()) { signal.consume(yield); }
                     std::lock_guard<std::mutex> lock{exclusive};
                     /// We need to recheck for there being items again
                     /// because we released the lock above and another
                     /// thread could have come in and stolen the item.
                     /// If there isn't one we'll loop around again until
                     /// there is.
-                    if ( items.size() ) {
-                        return pop_head();
-                    }
+                    if (items.size()) { return pop_head(); }
                 }
             }
             /// Return a job if one is available
             std::experimental::optional<T> consume() {
                 std::unique_lock<std::mutex> lock{exclusive};
-                if ( items.size() ) {
+                if (items.size()) {
                     return pop_head();
                 } else {
                     return {};
@@ -95,9 +91,7 @@ namespace f5 {
             }
 
             /// Close the queue
-            void close() {
-                signal.close();
-            }
+            void close() { signal.close(); }
         };
 
 
@@ -105,4 +99,3 @@ namespace f5 {
 
 
 }
-

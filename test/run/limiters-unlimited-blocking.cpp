@@ -26,13 +26,11 @@ int main() {
         We have to run the executor in another thread because the call
         to `run` won't exit until the coroutine has run to completion.
      */
-    std::thread t{[&]() {
-        ios.run();
-    }};
+    std::thread t{[&]() { ios.run(); }};
 
     /// Don't continue past here until we know the coroutine has started
     s1.wait();
-    if ( continued ) {
+    if (continued) {
         std::cout << "Continued flag set too early" << std::endl;
         return 2;
     }
@@ -43,11 +41,10 @@ int main() {
     /// Make sure that `ios.run()` has returned
     t.join();
 
-    if ( consumed != 1u ) {
+    if (consumed != 1u) {
         std::cout << "Produced 1, consumed " << consumed << std::endl;
         return 3;
     }
 
     return 0;
 }
-

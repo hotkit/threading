@@ -23,8 +23,9 @@ namespace f5 {
 
 
         /// Thread safe set implemented on a std::vector
-        template<typename V,
-            typename P = typename container_default_policy<V>::type>
+        template<
+                typename V,
+                typename P = typename container_default_policy<V>::type>
         class tsset {
             /// Mutex used to control access to the vector
             mutable std::mutex mutex;
@@ -36,18 +37,17 @@ namespace f5 {
 
             /// Return the lower bound for the key
             auto lower_bound(const V &k) const {
-                return std::lower_bound(set.begin(), set.end(), k,
-                    [](const auto &l, auto r) {
-                        return l < r;
-                    });
+                return std::lower_bound(
+                        set.begin(), set.end(), k,
+                        [](const auto &l, auto r) { return l < r; });
             }
             auto lower_bound(const V &k) {
-                return std::lower_bound(set.begin(), set.end(), k,
-                    [](const auto &l, auto r) {
-                        return l < r;
-                    });
+                return std::lower_bound(
+                        set.begin(), set.end(), k,
+                        [](const auto &l, auto r) { return l < r; });
             }
-        public:
+
+          public:
             /// Return an estimate of the size of the set.
             std::size_t size() {
                 std::unique_lock<std::mutex> lock(mutex);
@@ -59,7 +59,7 @@ namespace f5 {
             bool insert_if_not_found(const V &v) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto bound = lower_bound(v);
-                if ( bound == set.end() || not(*bound == v) ) {
+                if (bound == set.end() || not(*bound == v)) {
                     set.insert(bound, v);
                     return true;
                 }
@@ -77,10 +77,11 @@ namespace f5 {
             /// is empty then return the argument passed.
             typename traits::found_type pop_back(const V &s = V()) {
                 std::unique_lock<std::mutex> lock(mutex);
-                if ( set.empty() ) {
+                if (set.empty()) {
                     return traits::found_from_V(s);
                 } else {
-                    typename traits::found_type b{traits::found_from_V(set.back())};
+                    typename traits::found_type b{
+                            traits::found_from_V(set.back())};
                     set.pop_back();
                     return b;
                 }
@@ -91,7 +92,7 @@ namespace f5 {
             bool remove(const V &s) {
                 std::unique_lock<std::mutex> lock(mutex);
                 auto item = lower_bound(s);
-                if ( item == set.end() )
+                if (item == set.end())
                     return false;
                 else {
                     set.erase(item);
@@ -103,7 +104,8 @@ namespace f5 {
             template<typename F>
             std::size_t remove_if(F fn) {
                 std::unique_lock<std::mutex> lock(mutex);
-                set.erase(std::remove_if(set.begin(), set.end(), fn), set.end());
+                set.erase(
+                        std::remove_if(set.begin(), set.end(), fn), set.end());
                 return set.size();
             }
         };
@@ -113,4 +115,3 @@ namespace f5 {
 
 
 }
-
