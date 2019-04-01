@@ -1,3 +1,6 @@
+2019-03-30  Kirit Saelensminde  <kirit@felspar.com>
+ Replace `std::experimental::optional` with `std::optional`
+
 2018-09-27  Kirit Saelensminde  <kirit@felspar.com>
  Remove the old deprecated `eventfd` based code.
 
