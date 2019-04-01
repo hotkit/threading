@@ -1,5 +1,5 @@
 /**
-    Copyright 2017-2018, Felspar Co Ltd. <https://www.kirit.com/f5>
+    Copyright 2017-2019, Felspar Co Ltd. <https://www.kirit.com/f5>
 
     Distributed under the Boost Software License, Version 1.0.
     See <http://www.boost.org/LICENSE_1_0.txt>
@@ -12,7 +12,7 @@
 #include <f5/threading/limiters.hpp>
 
 #include <deque>
-#include <experimental/optional>
+#include <optional>
 #include <mutex>
 
 
@@ -81,7 +81,7 @@ namespace f5 {
                 }
             }
             /// Return a job if one is available
-            std::experimental::optional<T> consume() {
+            std::optional<T> consume() {
                 std::unique_lock<std::mutex> lock{exclusive};
                 if (items.size()) {
                     return pop_head();
