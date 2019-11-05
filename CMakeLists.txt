@@ -12,7 +12,7 @@ if(CMAKE_VERSION VERSION_LESS "3.8")
 else()
     target_compile_features(f5-threading INTERFACE cxx_std_17)
 endif()
-
+install(DIRECTORY include/f5 DESTINATION include)
 
 if(TARGET check)
     enable_testing()
