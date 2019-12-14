@@ -35,8 +35,11 @@ namespace f5 {
                 boost::asio::posix::stream_descriptor read, write;
 
               public:
+
+#if (BOOST_VERSION_MAJOR >= 70)
                 using executor_type =
                         boost::asio::posix::stream_descriptor::executor_type;
+#endif
 
                 pipe(boost::asio::io_service &ios) : read(ios), write(ios) {
                     std::array<int, 2> p{{0, 0}};
