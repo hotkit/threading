@@ -10,6 +10,7 @@
 
 
 #include <boost/asio.hpp>
+#include <boost/range.hpp> // Works around a bug in Boost 1.72.0
 #include <boost/asio/spawn.hpp>
 
 #include <atomic>
@@ -34,6 +35,9 @@ namespace f5 {
                 boost::asio::posix::stream_descriptor read, write;
 
               public:
+                using executor_type =
+                        boost::asio::posix::stream_descriptor::executor_type;
+
                 pipe(boost::asio::io_service &ios) : read(ios), write(ios) {
                     std::array<int, 2> p{{0, 0}};
                     if (::pipe(p.data()) < 0)
