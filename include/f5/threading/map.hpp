@@ -1,5 +1,5 @@
 /**
-    Copyright 2015-2019 Red Anchor Trading Co. Ltd.
+    Copyright 2015-2020 Red Anchor Trading Co. Ltd.
 
     Distributed under the Boost Software License, Version 1.0.
     See <http://www.boost.org/LICENSE_1_0.txt>
@@ -158,7 +158,7 @@ namespace f5 {
                 auto bound = lower_bound(k);
                 if (bound != map.end() && bound->first == k) {
                     // Cache hit so don't run the lambda
-                    miss(traits::value_from_V(bound->second));
+                    miss(traits::reference_from_V(bound->second));
                     return traits::value_from_V(bound->second);
                 }
                 // Cache miss, so use the lambda to get the value to insert
