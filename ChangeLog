@@ -1,5 +1,6 @@
 2020-01-17  Kirit Saelensminde  <kirit@felspar.com>
- `tsmap::add_if_not_found` miss lambda can now mutate the found item.
+ * `tsmap::alter` added so a found member can be changed in-situ.
+ * `tsmap::add_if_not_found` miss lambda can now mutate the found item.
 
 2019-03-30  Kirit Saelensminde  <kirit@felspar.com>
  Replace `std::experimental::optional` with `std::optional`
