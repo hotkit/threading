@@ -36,7 +36,6 @@ namespace f5 {
                 boost::asio::posix::stream_descriptor read, write;
 
               public:
-
 #if (BOOST_VERSION >= 107000)
                 using executor_type =
                         boost::asio::posix::stream_descriptor::executor_type;

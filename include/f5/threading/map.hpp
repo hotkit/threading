@@ -1,5 +1,5 @@
 /**
-    Copyright 2015-2019 Red Anchor Trading Co. Ltd.
+    Copyright 2015-2020 Red Anchor Trading Co. Ltd.
 
     Distributed under the Boost Software License, Version 1.0.
     See <http://www.boost.org/LICENSE_1_0.txt>
@@ -73,8 +73,7 @@ namespace f5 {
                     return traits::found_from_V(bound->second);
                 }
             }
-            /// Return a pointer to either the item in the map, or the
-            /// passed in default.
+            /// Return either the item in the map, or the passed in default.
             template<typename L>
             typename traits::found_type
                     find(const L &k, typename traits::found_type d) const {
@@ -82,6 +81,19 @@ namespace f5 {
                     return p;
                 else
                     return d;
+            }
+            /// Run the lambda on the found item. Return true if the lambda
+            /// was run.
+            template<typename L, typename F>
+            bool alter(L const &k, F lambda) {
+                std::unique_lock<std::mutex> lock(mutex);
+                auto bound = lower_bound(k);
+                if (bound == map.end() || k != bound->first) {
+                    return false;
+                } else {
+                    lambda(traits::reference_from_V(bound->second));
+                    return true;
+                }
             }
 
             /// Ensures the item at the requested key is the value given
@@ -158,7 +170,7 @@ namespace f5 {
                 auto bound = lower_bound(k);
                 if (bound != map.end() && bound->first == k) {
                     // Cache hit so don't run the lambda
-                    miss(traits::value_from_V(bound->second));
+                    miss(traits::reference_from_V(bound->second));
                     return traits::value_from_V(bound->second);
                 }
                 // Cache miss, so use the lambda to get the value to insert
