@@ -24,13 +24,15 @@ jobs:
     executor: << parameters.compiler >>
     steps:
       - checkout
-
+      - run:
+          name: libraries
+          command: |
+            git clone git@github.com:hotkit/fost-boost.git .circleci/boost
       - run:
           name: cmake
           environment:
             CMAKE_BUILD_TYPE: << parameters.variant >>
           command: cmake -G Ninja -S .circleci/ -B .circleci/
-
       - run:
           name: ninja
           command: ninja -C .circleci/
@@ -46,4 +48,3 @@ workflows:
             parameters:
               compiler: [gcc, clang]
               variant: [Debug, Release]
-              
